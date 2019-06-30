@@ -6,9 +6,15 @@
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
+    },
+    {
+      "src": "test.png",
+      "sizes": "144x144",
+      "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": "./",
+  "scope": ".",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
