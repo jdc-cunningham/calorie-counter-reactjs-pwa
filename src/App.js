@@ -1,4 +1,6 @@
 import React from 'react';
+import './misc/styles/css-reset.css';
+import './misc/fonts/fonts.css';
 import './misc/styles/layout.scss';
 import './App.scss';
 import BasicInterface from './components/basic-interface/BasicInterface';

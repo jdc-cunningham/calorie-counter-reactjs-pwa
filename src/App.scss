@@ -1,11 +1,15 @@
 body {
-  font-family: Robot;
+  font-family: Roboto;
   background-color: #282828;
   color: #cccccc;
+
+  * {
+    box-sizing: border-box;
+  }
 }
 
 .container {
-  width: 100%;
+  width: calc( 100% - 2em );
   max-width: 480px;
-  padding: 0 1em;
+  margin: 0 1em;
 }

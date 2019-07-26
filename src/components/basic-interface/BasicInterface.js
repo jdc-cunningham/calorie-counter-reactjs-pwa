@@ -124,10 +124,15 @@ class BasicInterface extends Component {
           <div className="basic-interface__header-total-calories">
             <h2>{ this.state.calories }</h2>
           </div>
-          <div className="basic-interface__header-date-group flex-col-top-left">
+          <div className="basic-interface__header-date-group flex-col-center-right">
             <span>{ this.state.today }</span>
             <span>{ todaysDateFormatted }</span>
           </div>
+        </div>
+        <div className="basic-interface__input flex-wrap-stretch-left">
+          <input placeholder="Name" type="text" className="basic-interface__input-name" />
+          <input placeholder="Calories" type="number" className="basic-interface__input-calories" />
+          <button type="button" className="basic-interface__input-submit">Add</button>
         </div>
       </div>
     )

@@ -1,4 +1,4 @@
-.basic-interface {
+ .basic-interface {
   height: 100vh;
   width: 100%;
   overflow-y: auto;
@@ -20,4 +20,77 @@
 
 .basic-interface__header-date-group {
   width: 30%;
+
+  span {
+    width: 100%;
+    text-align: right;
+    font-weight: bold;
+  }
+}
+
+.basic-interface__input {
+  width: 100%;
+}
+
+.basic-interface__input-name {
+  width: calc( 52% - 0.5em );
+  margin-right: 0.5em;
+  padding: 0.5em;
+  background-color: transparent;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 1em;
+
+  ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: #ccc;
+  }
+  ::-moz-placeholder { /* Firefox 19+ */
+    color: #ccc;
+  }
+  :-ms-input-placeholder { /* IE 10+ */
+    color: #ccc;
+  }
+  :-moz-placeholder { /* Firefox 18- */
+    color: #ccc;
+  }
+}
+
+.basic-interface__input-calories {
+  width: calc( 28% - 0.5em );
+  margin-right: 0.5em;
+  padding: 0.5em;
+  background-color: transparent;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 1em;
+  
+  ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: #ccc;
+  }
+  ::-moz-placeholder { /* Firefox 19+ */
+    color: #ccc;
+  }
+  :-ms-input-placeholder { /* IE 10+ */
+    color: #ccc;
+  }
+  :-moz-placeholder { /* Firefox 18- */
+    color: #ccc;
+  }
+}
+
+.basic-interface__input-submit {
+  width: 20%;
+  padding: 0.5em;
+  border-radius: 3px;
+  background-color: #d2691e;
+  color: white;
+  border: 0;
+  font-size: 1em;
+  font-weight: bold;
+
+  // &:focus, &:active, &:hover {
+  //   background-color: #d2691e;
+  // }
 }
