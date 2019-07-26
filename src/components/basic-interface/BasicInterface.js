@@ -1,16 +1,36 @@
 import React, { Component } from 'react';
+import './../../misc/styles/layout.scss';
 import './BasicInterface.scss';
 
 class BasicInterface extends Component {
   state = {
-    today: this.getTodaysDate(),
-    calories : 0, // this.getTodaysCalories(),
-    entries: [] // this.getTodaysCalorieEntries(),
+    date: new Date(),
+    today: null,
+    todaysDate: null,
+    calories : 0, // total calories for the day
+    entries: [] // list of calorie entries
   }
 
   addCalories = this.addCalories.bind( this );
+  getToday = this.getToday.bind( this );
   getTodaysCalories = this.getTodaysCalories.bind( this );
   getTodaysCalorieEntries = this.getTodaysCalorieEntries.bind( this );
+  dateSlash = this.dateSlash.bind( this );
+
+  getToday() {
+    const intDayMap = [
+            'Sunday',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday'
+          ],
+          dayInt = this.state.date.getDay();
+
+    return intDayMap[dayInt];
+  }
 
   getTodaysDate() {
     // https://stackoverflow.com/questions/1531093/how-do-i-get-the-current-date-in-javascript
@@ -26,7 +46,7 @@ class BasicInterface extends Component {
 
   getTodaysCalories() {
     // console.log( this.state );
-    let todaysCalories = sessionStorage.getItem( this.state.today );
+    let todaysCalories = sessionStorage.getItem( this.state.todaysDate );
     return todaysCalories ? JSON.parse( todaysCalories ).total : 0;
   }
 
@@ -46,12 +66,12 @@ class BasicInterface extends Component {
   }
 
   getTodaysCalorieEntries() {
-    const todaysCalorieEntries = sessionStorage.getItem( this.state.today );
+    const todaysCalorieEntries = sessionStorage.getItem( this.state.todaysDate );
     return todaysCalorieEntries ? JSON.parse( todaysCalorieEntries ).entries : [];
   }
 
   updateSessionStorage() {
-    sessionStorage.setItem( this.state.today, JSON.stringify(this.state) );
+    sessionStorage.setItem( this.state.todaysDate, JSON.stringify(this.state) );
   }
 
   addCalories( calories ) {
@@ -80,20 +100,35 @@ class BasicInterface extends Component {
     // this.updateSessionStorage();
   }
 
-  componentDidMount() {
+  dateSlash( dateStr ) {
+    return dateStr.split( '-' ).join( '/' );
+  }
+
+  componentWillMount() {
     this.setState( prevState => ({
+      today: this.getToday(),
+      todaysDate: this.getTodaysDate(),
       calories : this.getTodaysCalories(),
       entries: this.getTodaysCalorieEntries(),
     }));
   }
 
   render() {
-    
+    const todaysDateFormatted = this.dateSlash(this.state.todaysDate);
 
     return(
       <div className="basic-interface">
-        { this.state.calories }
-        <button type="button" onClick={ () => this.addCalories( 30 ) }>Add Calories</button>
+        {/* { this.state.calories }
+        <button type="button" onClick={ () => this.addCalories( 30 ) }>Add Calories</button> */}
+        <div className="basic-interface__header flex-wrap-center-center">
+          <div className="basic-interface__header-total-calories">
+            <h2>{ this.state.calories }</h2>
+          </div>
+          <div className="basic-interface__header-date-group flex-col-top-left">
+            <span>{ this.state.today }</span>
+            <span>{ todaysDateFormatted }</span>
+          </div>
+        </div>
       </div>
     )
   }

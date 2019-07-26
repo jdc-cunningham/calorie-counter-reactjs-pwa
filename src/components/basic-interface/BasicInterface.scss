@@ -1,0 +1,23 @@
+.basic-interface {
+  height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.basic-interface__header {
+  width: 100%;
+  padding: 1em 0;
+}
+
+.basic-interface__header-total-calories {
+  width: 70%;
+
+  h2 {
+    font-size: 2.5rem;
+    margin: 0;
+  }
+}
+
+.basic-interface__header-date-group {
+  width: 30%;
+}
