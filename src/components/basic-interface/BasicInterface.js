@@ -11,11 +11,17 @@ class BasicInterface extends Component {
     entries: [] // list of calorie entries
   }
 
+  // methods
   addCalories = this.addCalories.bind( this );
   getToday = this.getToday.bind( this );
   getTodaysCalories = this.getTodaysCalories.bind( this );
   getTodaysCalorieEntries = this.getTodaysCalorieEntries.bind( this );
   dateSlash = this.dateSlash.bind( this );
+
+  // inputs
+  calorieName = React.createRef();
+  calorieAmount = React.createRef();
+  calorieAddBtn = React.createRef();
 
   getToday() {
     const intDayMap = [
@@ -44,60 +50,57 @@ class BasicInterface extends Component {
     return today;
   }
 
-  getTodaysCalories() {
-    // console.log( this.state );
-    let todaysCalories = sessionStorage.getItem( this.state.todaysDate );
-    return todaysCalories ? JSON.parse( todaysCalories ).total : 0;
+  getTodaysCalories( todaysDate ) {
+    let todaysCalories = sessionStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
+    return todaysCalories ? JSON.parse(todaysCalories).total : 0;
   }
 
-  updateCalories( dateStr, calories, add ) {
-    let daysCalories = sessionStorage.getItem( dateStr ) ? JSON.parse( sessionStorage.getItem(dateStr) ).total : 0,
-        newCalories = 0;
-
-    if ( add ) {
-      if ( daysCalories ) {
-        newCalories = calories += daysCalories;
-      }
-    } else {
-      newCalories = daysCalories - calories;
-    }
-
-    sessionStorage.setItem( dateStr, newCalories );
-  }
-
-  getTodaysCalorieEntries() {
-    const todaysCalorieEntries = sessionStorage.getItem( this.state.todaysDate );
+  getTodaysCalorieEntries( todaysDate ) {
+    const todaysCalorieEntries = sessionStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
     return todaysCalorieEntries ? JSON.parse( todaysCalorieEntries ).entries : [];
   }
 
-  updateSessionStorage() {
-    sessionStorage.setItem( this.state.todaysDate, JSON.stringify(this.state) );
+  updateSessionStorage( newState ) {
+    sessionStorage.setItem( this.state.todaysDate, JSON.stringify(
+      {
+        total: newState.calories,
+        entries: newState.entries
+      }
+    ));
+
+    this.calorieAddBtn.current.removeAttribute( 'disabled' );
   }
 
-  addCalories( calories ) {
-    // this.setState({
-    //   calories: this.state.calories + 10
-    // });
-    // console.log( this.state.calories + 10 );
+  addCalories() {
+    this.calorieAddBtn.current.setAttribute( 'disabled', true );
 
-    // console.log( this.state );
+    const calorieName = this.calorieName.current.value,
+          calorieAmount = parseInt( this.calorieAmount.current.value );
 
-    let entries = this.state.entries.length ? this.state.entries : [];
-    
-    entries.push({
-      name: 'test',
-      calories: calories,
-      gain: true
-    });
+    if ( !calorieName || !calorieAmount ) {
+      alert( 'Please fill in both calorie name and calorie amount' );
+      return;
+    }
 
-    console.log( entries );
+    let currentCalories = this.state.calories,
+        currentCalorieEntries = this.state.entries,
+        newEntry = {
+          name: calorieName,
+          amount: calorieAmount,
+          gain: calorieAmount > 0 ? true : false
+        },
+        newState = {};
 
-    this.setState( prevState => ({
-      calories: this.state.calories + calories,
-      entries: entries
-    }));
+    currentCalorieEntries.push( newEntry );
+    currentCalories += calorieAmount;
 
-    // this.updateSessionStorage();
+    newState = {
+      calories: currentCalories,
+      entries: currentCalorieEntries
+    };
+
+    this.updateSessionStorage( newState );
+    this.setState( prevState => (newState) );
   }
 
   dateSlash( dateStr ) {
@@ -105,29 +108,35 @@ class BasicInterface extends Component {
   }
 
   componentWillMount() {
+    const todaysDate = this.getTodaysDate();
+
     this.setState( prevState => ({
       today: this.getToday(),
-      todaysDate: this.getTodaysDate(),
-      calories : this.getTodaysCalories(),
-      entries: this.getTodaysCalorieEntries(),
+      todaysDate: todaysDate,
+      calories : parseInt( this.getTodaysCalories(todaysDate) ),
+      entries: this.getTodaysCalorieEntries( todaysDate ),
     }));
   }
 
   render() {
-    const todaysDateFormatted = this.dateSlash(this.state.todaysDate);
-    const sampleEntry = {
-      name: 'Tuna Mayo Avocado',
-      calories: 300,
-      gain: true
-    };
+    const todaysDateFormatted = this.dateSlash(this.state.todaysDate),
+          entryRows = this.state.entries.map( (entry, index) => {
+            return(
+              <div key={ index } className="basic-interface__entry flex-wrap-center-left">
+                <span className="entry__name">{ entry.name }</span>
+                <span className="entry__calories">{ (entry.gain ? '+' : '-') + entry.amount }c</span>
+              </div>
+            )
+          });;
 
     return(
       <div className="basic-interface">
-        {/* { this.state.calories }
-        <button type="button" onClick={ () => this.addCalories( 30 ) }>Add Calories</button> */}
         <div className="basic-interface__header flex-wrap-center-center">
           <div className="basic-interface__header-total-calories">
-            <h2>{ this.state.calories }</h2>
+            <h2>
+              { this.state.calories }
+              <span>c</span>
+            </h2>
           </div>
           <div className="basic-interface__header-date-group flex-col-center-right">
             <span>{ this.state.today }</span>
@@ -135,14 +144,11 @@ class BasicInterface extends Component {
           </div>
         </div>
         <div className="basic-interface__input flex-wrap-stretch-left">
-          <input placeholder="Name" type="text" className="basic-interface__input-name" />
-          <input placeholder="Calories" type="number" className="basic-interface__input-calories" />
-          <button type="button" className="basic-interface__input-submit">Add</button>
+          <input placeholder="Name" type="text" className="basic-interface__input-name" ref={ this.calorieName } />
+          <input placeholder="Calories" type="number" className="basic-interface__input-calories" ref={ this.calorieAmount } />
+          <button type="button" className="basic-interface__input-submit" onClick={ this.addCalories } ref={ this.calorieAddBtn }>Add</button>
         </div>
-        <div className="basic-interface__entry flex-wrap-center-left">
-          <span className="entry__name">{ sampleEntry.name }</span>
-          <span className="entry__calories">{ (sampleEntry.gain ? '+' : '-') + sampleEntry.calories }c</span>
-        </div>
+        { entryRows }
       </div>
     )
   }
