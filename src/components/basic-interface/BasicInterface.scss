@@ -30,6 +30,7 @@
 
 .basic-interface__input {
   width: 100%;
+  margin-bottom: 0.5em;
 }
 
 .basic-interface__input-name {
@@ -41,6 +42,7 @@
   border: 1px solid #ccc;
   border-radius: 3px;
   font-size: 1em;
+  color: #ccc;
 
   ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
     color: #ccc;
@@ -65,6 +67,7 @@
   border: 1px solid #ccc;
   border-radius: 3px;
   font-size: 1em;
+  color: #ccc;
   
   ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
     color: #ccc;
@@ -93,4 +96,18 @@
   // &:focus, &:active, &:hover {
   //   background-color: #d2691e;
   // }
+}
+
+.basic-interface__entry {
+  padding: 0.5em 0;
+  width: 100%;
+
+  .entry__name {
+    width: 70%;
+  }
+
+  .entry__calories {
+    width: 30%;
+    text-align: right;
+  }
 }

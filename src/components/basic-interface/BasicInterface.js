@@ -115,6 +115,11 @@ class BasicInterface extends Component {
 
   render() {
     const todaysDateFormatted = this.dateSlash(this.state.todaysDate);
+    const sampleEntry = {
+      name: 'Tuna Mayo Avocado',
+      calories: 300,
+      gain: true
+    };
 
     return(
       <div className="basic-interface">
@@ -133,6 +138,10 @@ class BasicInterface extends Component {
           <input placeholder="Name" type="text" className="basic-interface__input-name" />
           <input placeholder="Calories" type="number" className="basic-interface__input-calories" />
           <button type="button" className="basic-interface__input-submit">Add</button>
+        </div>
+        <div className="basic-interface__entry flex-wrap-center-left">
+          <span className="entry__name">{ sampleEntry.name }</span>
+          <span className="entry__calories">{ (sampleEntry.gain ? '+' : '-') + sampleEntry.calories }c</span>
         </div>
       </div>
     )
