@@ -17,6 +17,7 @@ class BasicInterface extends Component {
   getTodaysCalories = this.getTodaysCalories.bind( this );
   getTodaysCalorieEntries = this.getTodaysCalorieEntries.bind( this );
   dateSlash = this.dateSlash.bind( this );
+  toggleEditRow = this.toggleEditRow.bind( this );
 
   // inputs
   calorieName = React.createRef();
@@ -71,6 +72,16 @@ class BasicInterface extends Component {
     this.calorieAddBtn.current.removeAttribute( 'disabled' );
   }
 
+  generateUniqueId() {
+    // use timestamp
+    return Date.now();
+  }
+
+  clearInputs() {
+    this.calorieName.current.value = '';
+    this.calorieAmount.current.value = '';
+  }
+
   addCalories() {
     this.calorieAddBtn.current.setAttribute( 'disabled', true );
 
@@ -79,12 +90,14 @@ class BasicInterface extends Component {
 
     if ( !calorieName || !calorieAmount ) {
       alert( 'Please fill in both calorie name and calorie amount' );
+      this.calorieAddBtn.current.removeAttribute( 'disabled' );
       return;
     }
 
     let currentCalories = this.state.calories,
         currentCalorieEntries = this.state.entries,
         newEntry = {
+          id: this.generateUniqueId(),
           name: calorieName,
           amount: calorieAmount,
           gain: calorieAmount > 0 ? true : false
@@ -100,11 +113,16 @@ class BasicInterface extends Component {
     };
 
     this.updateSessionStorage( newState );
+    this.clearInputs();
     this.setState( prevState => (newState) );
   }
 
   dateSlash( dateStr ) {
     return dateStr.split( '-' ).join( '/' );
+  }
+
+  toggleEditRow( entryId ) {
+    console.log( entryId );
   }
 
   componentWillMount() {
@@ -122,7 +140,7 @@ class BasicInterface extends Component {
     const todaysDateFormatted = this.dateSlash(this.state.todaysDate),
           entryRows = this.state.entries.map( (entry, index) => {
             return(
-              <div key={ index } className="basic-interface__entry flex-wrap-center-left">
+              <div key={ index } onClick={ () => this.toggleEditRow(entry.id) } className="basic-interface__entry flex-wrap-center-left">
                 <span className="entry__name">{ entry.name }</span>
                 <span className="entry__calories">{ (entry.gain ? '+' : '-') + entry.amount }c</span>
               </div>
