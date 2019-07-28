@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './../../misc/styles/layout.scss';
 import './BasicInterface.scss';
+import { isObject } from './../../misc/js/utilities.js';
+import closeIcon from './../../misc/icons/close-icon__chocolate.svg';
 
 class BasicInterface extends Component {
   state = {
@@ -8,7 +10,9 @@ class BasicInterface extends Component {
     today: null,
     todaysDate: null,
     calories : 0, // total calories for the day
-    entries: [] // list of calorie entries
+    entries: [], // list of calorie 
+    activePopupEntry: null, // should be object when set
+    activePopupEntryModified: false
   }
 
   // methods
@@ -17,7 +21,11 @@ class BasicInterface extends Component {
   getTodaysCalories = this.getTodaysCalories.bind( this );
   getTodaysCalorieEntries = this.getTodaysCalorieEntries.bind( this );
   dateSlash = this.dateSlash.bind( this );
-  toggleEditRow = this.toggleEditRow.bind( this );
+  togglePopup = this.togglePopup.bind( this );
+  popupInputHandler = this.popupInputHandler.bind( this );
+  savePopupEntryChanges = this.savePopupEntryChanges.bind( this );
+  closePopup = this.closePopup.bind( this );
+  deleteEntry = this.deleteEntry.bind( this );
 
   // inputs
   calorieName = React.createRef();
@@ -53,7 +61,7 @@ class BasicInterface extends Component {
 
   getTodaysCalories( todaysDate ) {
     let todaysCalories = sessionStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
-    return todaysCalories ? JSON.parse(todaysCalories).total : 0;
+    return todaysCalories ? JSON.parse(todaysCalories).calories : 0;
   }
 
   getTodaysCalorieEntries( todaysDate ) {
@@ -64,7 +72,7 @@ class BasicInterface extends Component {
   updateSessionStorage( newState ) {
     sessionStorage.setItem( this.state.todaysDate, JSON.stringify(
       {
-        total: newState.calories,
+        calories: newState.calories,
         entries: newState.entries
       }
     ));
@@ -108,8 +116,13 @@ class BasicInterface extends Component {
     currentCalories += calorieAmount;
 
     newState = {
+      date: this.state.date,
+      today: this.state.today,
+      todaysDate: this.state.todaysDate,
       calories: currentCalories,
-      entries: currentCalorieEntries
+      entries: currentCalorieEntries,
+      activePopupEntry: null,
+      activePopupEntryModified: false
     };
 
     this.updateSessionStorage( newState );
@@ -121,9 +134,85 @@ class BasicInterface extends Component {
     return dateStr.split( '-' ).join( '/' );
   }
 
-  toggleEditRow( entryId ) {
-    console.log( entryId );
+  togglePopup( entry ) {
+    this.setState( prevState => ({
+      activePopupEntry: entry
+    }));
   }
+
+  popupInputHandler( whichInput, event ) {
+    let curEntry = this.state.activePopupEntry;
+    if ( whichInput === 'name' ) {
+      curEntry.name = event.target.value;
+    } else {
+      curEntry.amount = event.target.value;
+    }
+
+    this.setState( prevState => ({
+      activePopupEntry: curEntry,
+      activePopupEntryModified: true
+    }));
+  }
+
+  savePopupEntryChanges() {
+    let curEntry = this.state.activePopupEntry,
+        curEntries = this.state.entries,
+        newTotalCalories = 0,
+        newState = {};
+
+    curEntries.forEach( (entry, id) => {
+      if ( entry.id === curEntry.id ) {
+        curEntries[id] = curEntry;
+      }
+      newTotalCalories += parseInt( entry.amount );
+    });
+
+    newState = {
+      date: this.state.date,
+      today: this.state.today,
+      todaysDate: this.state.todaysDate,
+      calories: newTotalCalories,
+      entries: curEntries,
+      activePopupEntryModified: false,
+      activePopupEntry: null
+    };
+    this.updateSessionStorage( newState );
+    this.setState( prevState => ( newState ));
+  }
+
+  closePopup() {
+    this.setState( prevState => ({
+      activePopupEntryModified: false,
+      activePopupEntry: null
+    }));
+  }
+
+  deleteEntry() {
+    let curEntries = this.state.entries,
+        activeEntryId = this.state.activePopupEntry.id,
+        newTotalCalories = 0,
+        newState = {};
+        
+    curEntries.forEach( (entry, id) => {
+      if ( entry.id === activeEntryId ) {
+        curEntries.splice(id, 1);
+      } else {
+        newTotalCalories += parseInt( entry.amount );
+      }
+    });
+ 
+    newState = {
+      date: this.state.date,
+      today: this.state.today,
+      todaysDate: this.state.todaysDate,
+      calories: newTotalCalories,
+      entries: curEntries,
+      activePopupEntryModified: false,
+      activePopupEntry: null
+    };
+    this.updateSessionStorage( newState );
+    this.setState( prevState => ( newState ));
+  } 
 
   componentWillMount() {
     const todaysDate = this.getTodaysDate();
@@ -131,8 +220,8 @@ class BasicInterface extends Component {
     this.setState( prevState => ({
       today: this.getToday(),
       todaysDate: todaysDate,
-      calories : parseInt( this.getTodaysCalories(todaysDate) ),
-      entries: this.getTodaysCalorieEntries( todaysDate ),
+      calories: parseInt( this.getTodaysCalories(todaysDate) ),
+      entries: this.getTodaysCalorieEntries( todaysDate )
     }));
   }
 
@@ -140,15 +229,42 @@ class BasicInterface extends Component {
     const todaysDateFormatted = this.dateSlash(this.state.todaysDate),
           entryRows = this.state.entries.map( (entry, index) => {
             return(
-              <div key={ index } onClick={ () => this.toggleEditRow(entry.id) } className="basic-interface__entry flex-wrap-center-left">
+              <div key={ index } onClick={ () => this.togglePopup(entry) } className="basic-interface__entry flex-wrap-center-left">
                 <span className="entry__name">{ entry.name }</span>
                 <span className="entry__calories">{ (entry.gain ? '+' : '-') + entry.amount }c</span>
               </div>
             )
-          });;
+          });
+    const activeEntry = this.state.activePopupEntry;
+    const entryPopup = (function( activeEntry, self ) {
+      if ( isObject(activeEntry) ) {
+        return(
+          <div className="basic-interface__popup">
+            <div className="basic-interface__popup-header flex-wrap-center-left">
+              <h2>Edit</h2>
+              <button type="button" className="flex-wrap-center-center" onClick= { self.closePopup }>
+                <img src={ closeIcon } alt="Close edit entry popup" />
+              </button>
+            </div>
+            <div className="basic-interface__popup-body flex-col-center-center">
+              <input type="text" value={ activeEntry.name } onChange={ (event) => self.popupInputHandler( 'name', event ) } />
+              <input type="number" value={ activeEntry.amount } onChange={ (event) => self.popupInputHandler( 'amount', event ) } />
+            </div>
+            <div className="basic-interface__popup-footer flex-wrap-center-left">
+              <button type="button" className="delete" onClick={ self.deleteEntry }>Delete</button>
+              <button type="button" className="save" 
+                disabled={ !self.state.activePopupEntryModified }
+                onClick={ self.savePopupEntryChanges }
+              >Save</button>
+            </div>
+          </div>
+        )
+      }
+    })( activeEntry, this );
 
     return(
       <div className="basic-interface">
+        { entryPopup }
         <div className="basic-interface__header flex-wrap-center-center">
           <div className="basic-interface__header-total-calories">
             <h2>

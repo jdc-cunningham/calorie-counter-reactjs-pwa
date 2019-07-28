@@ -64,3 +64,9 @@
   @extend .flex-col;
   @extend .flex-center-right;
 }
+
+.flex-col-center-center {
+  @extend .flex;
+  @extend .flex-col;
+  @extend .flex-center-center;
+}
