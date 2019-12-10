@@ -1,7 +1,7 @@
-## Calorie Counter PWA
+## Daily Driver
 
-This is my first "functional PWA"
-It's basic at this time. Currently uses sessionStorage for storage however to my dismay, the data is deleted when the PWA is closed. So I'm going to use IndexDB next.
+This is a different app, I'm just using this base code as something to start on... I could just create new repo but oh well...
 
-### Current state as of 08/05/2019
-!['app as of 08/05/2019'](https://raw.githubusercontent.com/jdc-cunningham/reactjs-pwa/master/calorie-counter-pwa.gif)
+I'm trying to build a base app in an hour of something I had in mind... which is pretty much REINVENTING a calendar.
+
+But it's a daily driver so I can stick to my habits, although I don't want to be a robot and follow a schedule... I'm just in a crunch mode at this time of my life(being poor).

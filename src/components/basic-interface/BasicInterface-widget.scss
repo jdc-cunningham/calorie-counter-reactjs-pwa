@@ -1,0 +1,43 @@
+.basic-interface__widget-container {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 1px solid red;
+}
+
+.basic-interface__widget {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding-top: 26px; // for temp close button
+
+    input.full-width, textarea, .basic-interface__span-wrapper {
+        width: 100%;
+    }
+}
+
+.basic-interface__widget-close-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.basic-interface__span-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+
+    span {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex: 1;
+    }
+
+    button {
+        flex: 0;
+    }
+}
