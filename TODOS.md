@@ -1,5 +1,6 @@
 ### random
 * redirect ssl
+* figure out what's wrong with PWA, possibly serviceworker fetch to get add to home screen working
 
 ### basic
 * ~~save single event~~

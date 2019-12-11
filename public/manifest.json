@@ -11,6 +11,11 @@
       "src": "test.png",
       "sizes": "144x144",
       "type": "image/png"
+    },
+    {
+      "src": "test2.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
   "start_url": "./",
