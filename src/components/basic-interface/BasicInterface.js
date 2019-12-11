@@ -12,7 +12,8 @@ class BasicInterface extends Component {
         calories: 0, // total calories for the day
         entries: [], // list of calorie 
         activePopupEntry: null, // should be object when set
-        activePopupEntryModified: false
+        activePopupEntryModified: false,
+        renderedItems: {}
     }
 
     // methods
@@ -83,15 +84,17 @@ class BasicInterface extends Component {
 
     getTodaysEvents() {
         const entries = sessionStorage.getItem(this.state.todaysDate);
-        return entries ? entries : [];
+        return entries ? JSON.parse(entries) : [];
     }
 
-    renderEvents() {
-        return (
-            <div className="basic-interface__entry">
-                Something should be here, but alas, time is not
-            </div>
-        );
+    renderEvents(todaysEvents) {
+        return todaysEvents.map((event, key) => { // returns array of JSX? whack, I realize map returns array but I tried forEach too
+            return <div key={key} className="basic-interface__entry">
+                <div className="basic-interface__entry-icon"></div>
+                <div className="basic-interface__entry-title">{event.title}</div>
+                <div className="basic-interface__entry-body">{event.body}</div>                
+            </div>;
+        });
     }
 
     // forgive me
@@ -102,7 +105,7 @@ class BasicInterface extends Component {
     saveEntry = this.saveEntry.bind(this);
 
     saveEntry() {
-        alert('save');
+        alert('saved!');
         const title = this.title.current.value;
         const body = this.body.current.value;
         const isRecurring = this.checkbox.current.value;
@@ -122,6 +125,8 @@ class BasicInterface extends Component {
         } else {
             sessionStorage.setItem(todaysDate, JSON.stringify([newEntry]));
         }
+
+        this.setState(this.state); // reload
     }
 
     addInterface() {
@@ -148,7 +153,11 @@ class BasicInterface extends Component {
         const todaysEvents = this.getTodaysEvents();
         const displayContent = !todaysEvents.length
             ? this.addInterface()
-            : this.renderEvents(todaysEvents);
+            // omg wtf is this
+            : <>
+                {this.renderEvents(todaysEvents)}
+                {this.addInterface()}
+            </>;
 
         return (
             <div className="basic-interface">
