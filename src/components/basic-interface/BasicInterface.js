@@ -53,8 +53,8 @@ class BasicInterface extends Component {
         return today;
     }
 
-    updateSessionStorage(newState) {
-        sessionStorage.setItem(this.state.todaysDate, JSON.stringify(
+    updatelocalStorage(newState) {
+        localStorage.setItem(this.state.todaysDate, JSON.stringify(
             {
                 calories: newState.calories,
                 entries: newState.entries
@@ -83,7 +83,7 @@ class BasicInterface extends Component {
     }
 
     getTodaysEvents() {
-        const entries = sessionStorage.getItem(this.state.todaysDate);
+        const entries = localStorage.getItem(this.state.todaysDate);
         return entries ? JSON.parse(entries) : [];
     }
 
@@ -105,12 +105,17 @@ class BasicInterface extends Component {
     saveEntry = this.saveEntry.bind(this);
 
     saveEntry() {
-        alert('saved!');
         const title = this.title.current.value;
         const body = this.body.current.value;
         const isRecurring = this.checkbox.current.value;
         const todaysDate = this.state.todaysDate;
-        const curEntries = sessionStorage.getItem(todaysDate);
+        let curEntries = localStorage.getItem(todaysDate);
+
+        if (!title.length || !body.length) {
+            alert("Both title and body fields required"); // bad
+            return false;
+        }
+
         const newEntry = {
             id: this.generateUniqueId(),
             icon: "",
@@ -121,11 +126,21 @@ class BasicInterface extends Component {
         };
 
         if (curEntries) {
-            sessionStorage.setItem(todaysDate, JSON.parse(curEntries).push({newEntry}));
+            curEntries = JSON.parse(curEntries);
+            console.log(curEntries[0]);
+            console.log(newEntry);
+            const newArr = curEntries.push(newEntry);
+            console.log(newArr); // why is this 2
+            // console.log(curEntries);
+            // console.log(typeof JSON.parse(curEntries));
+            // console.log(curEntries).push(newEntry);
+            // console.log(JSON.stringify(curEntries).push(newEntry));
+            // localStorage.setItem(todaysDate, JSON.stringify(JSON.parse(curEntries).push(newEntry))); // oof
         } else {
-            sessionStorage.setItem(todaysDate, JSON.stringify([newEntry]));
+            localStorage.setItem(todaysDate, JSON.stringify([newEntry]));
         }
 
+        alert('saved!');
         this.setState(this.state); // reload
     }
 
