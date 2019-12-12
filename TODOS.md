@@ -22,6 +22,7 @@
     * time comparison
   * modify load logic
     * don't need to re-enter eg. next day
+* ability to delete
 
 ### later
 * put labels on stuff
