@@ -127,15 +127,8 @@ class BasicInterface extends Component {
 
         if (curEntries) {
             curEntries = JSON.parse(curEntries);
-            console.log(curEntries[0]);
-            console.log(newEntry);
-            const newArr = curEntries.push(newEntry);
-            console.log(newArr); // why is this 2
-            // console.log(curEntries);
-            // console.log(typeof JSON.parse(curEntries));
-            // console.log(curEntries).push(newEntry);
-            // console.log(JSON.stringify(curEntries).push(newEntry));
-            // localStorage.setItem(todaysDate, JSON.stringify(JSON.parse(curEntries).push(newEntry))); // oof
+            curEntries.push(newEntry);
+            localStorage.setItem(todaysDate, JSON.stringify(curEntries));
         } else {
             localStorage.setItem(todaysDate, JSON.stringify([newEntry]));
         }
