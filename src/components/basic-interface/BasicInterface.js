@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import './../../misc/styles/layout.scss';
 import './BasicInterface.scss';
-import './BasicInterface-widget.scss'; // terrible whip me till I bleed
+import './BasicInterfaceWidget.scss'; // terrible whip me till I bleed
+import './BasicInterfaceEntryRow.scss';
 import closeIcon from './../../misc/icons/close-icon__chocolate.svg';
 
 class BasicInterface extends Component {
@@ -90,8 +91,17 @@ class BasicInterface extends Component {
     renderEvents(todaysEvents) {
         return todaysEvents.map((event, key) => { // returns array of JSX? whack, I realize map returns array but I tried forEach too
             return <div key={key} className="basic-interface__entry">
-                <div className="basic-interface__entry-icon"></div>
-                <div className="basic-interface__entry-title">{event.title}</div>
+                <span>
+                    <span className="inner">
+                        <div className="basic-interface__entry-icon"></div>
+                        <div className="basic-interface__entry-title">{event.title}</div>
+                    </span>
+                    <div className="basic-interface__three-dots">
+                        <div className="basic-interface__dot"></div>
+                        <div className="basic-interface__dot middle"></div>
+                        <div className="basic-interface__dot"></div>
+                    </div>
+                </span>
                 <div className="basic-interface__entry-body">{event.body}</div>                
             </div>;
         });
@@ -139,7 +149,7 @@ class BasicInterface extends Component {
 
     addInterface() {
         return (
-            <div className="basic-interface__widget-container">
+            <div className="basic-interface__add-widget-container">
                 <div className="basic-interface__widget">
                     <button type="button" className="basic-interface__widget-close-btn">Close</button>
                     <input ref={ this.title } placeholder="title" className="full-width" type="text" />
