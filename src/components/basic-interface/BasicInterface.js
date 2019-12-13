@@ -14,7 +14,7 @@ class BasicInterface extends Component {
         entries: [], // list of calorie 
         activePopupEntry: null, // should be object when set
         activePopupEntryModified: false,
-        renderedItems: {}
+        renderedItems: []
     }
 
     // methods
@@ -88,9 +88,22 @@ class BasicInterface extends Component {
         return entries ? JSON.parse(entries) : [];
     }
 
+    openRow(entryId) {
+        const curState = this.state;
+        curState.renderedItems.map((entry) => {
+            if (entry.id === entryId) {
+                entry.open = !entry.open;
+            }
+            return entry;
+        });
+        this.setState(curState);
+    }
+
     renderEvents(todaysEvents) {
         return todaysEvents.map((event, key) => { // returns array of JSX? whack, I realize map returns array but I tried forEach too
-            return <div key={key} className="basic-interface__entry">
+            // const rowOpen = (this.state.renderedItems.length && this.state.renderedItems[event.id].open) ? "open" : "";
+            const rowOpen = "open"; // state is messed up
+            return <div key={key} className={`basic-interface__entry ${rowOpen}`}>
                 <span>
                     <span className="inner">
                         <div className="basic-interface__entry-icon"></div>
