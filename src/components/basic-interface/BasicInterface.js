@@ -108,13 +108,15 @@ class BasicInterface extends Component {
         // god this brutal
         const renderedItemOpenStates = this.state.renderedItemOpenStates;
         const newState = {};
+
         Object.keys(renderedItemOpenStates).forEach((key) => {
             if (entryId === parseInt(key)) { // lol
-                newState[key] = !renderedItemOpenStates[entryId];
+                newState[key] = !renderedItemOpenStates[key];
             } else {
-                newState[key] = renderedItemOpenStates[entryId]; // holy cow this is brutal coding I HAVE NO BRAIN!!!
+                newState[key] = renderedItemOpenStates[key]; // holy cow this is brutal coding I HAVE NO BRAIN!!!
             }
         });
+
         this.setState(prevState => ({
             renderedItemOpenStates: newState
         }));

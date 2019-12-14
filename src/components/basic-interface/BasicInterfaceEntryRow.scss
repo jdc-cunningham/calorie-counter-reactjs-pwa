@@ -6,6 +6,10 @@
     border: 1px solid #aaa;
     border-radius: 4px;
 
+    &:not(:first-of-type) {
+        margin-top: 0.5rem;
+    }
+
     &.open {
         .basic-interface__entry-body {
             display: block !important; // oof
