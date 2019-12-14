@@ -14,7 +14,7 @@ class BasicInterface extends Component {
         entries: [], // list of calorie 
         activePopupEntry: null, // should be object when set
         activePopupEntryModified: false,
-        renderedItems: []
+        renderedItemOpenStates: {}
     }
 
     // methods
@@ -83,29 +83,52 @@ class BasicInterface extends Component {
         }));
     }
 
+    componentDidMount() {
+        const todaysEvents = this.getTodaysEvents();
+        const tmpObj = {};
+
+        // tragedy
+        if (todaysEvents.length) {
+            todaysEvents.forEach((event) => {
+                tmpObj[event.id] = false;
+            });
+        }
+
+        this.setState(prevState => ({
+            renderedItemOpenStates: tmpObj
+        }));
+    }
+
     getTodaysEvents() {
         const entries = localStorage.getItem(this.state.todaysDate);
         return entries ? JSON.parse(entries) : [];
     }
 
     openRow(entryId) {
-        const curState = this.state;
-        curState.renderedItems.map((entry) => {
-            if (entry.id === entryId) {
-                entry.open = !entry.open;
+        // god this brutal
+        const renderedItemOpenStates = this.state.renderedItemOpenStates;
+        const newState = {};
+        Object.keys(renderedItemOpenStates).forEach((key) => {
+            if (entryId === parseInt(key)) { // lol
+                newState[key] = !renderedItemOpenStates[entryId];
+            } else {
+                newState[key] = renderedItemOpenStates[entryId]; // holy cow this is brutal coding I HAVE NO BRAIN!!!
             }
-            return entry;
         });
-        this.setState(curState);
+        this.setState(prevState => ({
+            renderedItemOpenStates: newState
+        }));
     }
 
     renderEvents(todaysEvents) {
+        const dispState = this.state.renderedItemOpenStates;
+
         return todaysEvents.map((event, key) => { // returns array of JSX? whack, I realize map returns array but I tried forEach too
-            // const rowOpen = (this.state.renderedItems.length && this.state.renderedItems[event.id].open) ? "open" : "";
-            const rowOpen = "open"; // state is messed up
+            const rowOpen = (event.id in dispState && dispState[event.id]) ? "open" : "";
+
             return <div key={key} className={`basic-interface__entry ${rowOpen}`}>
                 <span>
-                    <span className="inner">
+                    <span className="inner" onClick={ () => this.openRow(event.id) }>
                         <div className="basic-interface__entry-icon"></div>
                         <div className="basic-interface__entry-title">{event.title}</div>
                     </span>
@@ -182,6 +205,7 @@ class BasicInterface extends Component {
     render() {
         const todaysDateFormatted = this.dateSlash(this.state.todaysDate);
         const todaysEvents = this.getTodaysEvents();
+
         const displayContent = !todaysEvents.length
             ? this.addInterface()
             // omg wtf is this
