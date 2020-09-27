@@ -1,5 +1,5 @@
 {
-  "name": "react-pwa",
+  "name": "calorie-counter-reactjs-pwa",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -32,5 +32,6 @@
   },
   "devDependencies": {
     "http-server": "^0.11.1"
-  }
+  },
+  "homepage": "/calorie-counter"
 }

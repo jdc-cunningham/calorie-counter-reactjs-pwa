@@ -60,17 +60,17 @@ class BasicInterface extends Component {
   }
 
   getTodaysCalories( todaysDate ) {
-    let todaysCalories = sessionStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
+    let todaysCalories = localStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
     return todaysCalories ? JSON.parse(todaysCalories).calories : 0;
   }
 
   getTodaysCalorieEntries( todaysDate ) {
-    const todaysCalorieEntries = sessionStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
+    const todaysCalorieEntries = localStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
     return todaysCalorieEntries ? JSON.parse( todaysCalorieEntries ).entries : [];
   }
 
-  updateSessionStorage( newState ) {
-    sessionStorage.setItem( this.state.todaysDate, JSON.stringify(
+  updatelocalStorage( newState ) {
+    localStorage.setItem( this.state.todaysDate, JSON.stringify(
       {
         calories: newState.calories,
         entries: newState.entries
@@ -125,7 +125,7 @@ class BasicInterface extends Component {
       activePopupEntryModified: false
     };
 
-    this.updateSessionStorage( newState );
+    this.updatelocalStorage( newState );
     this.clearInputs();
     this.setState( prevState => (newState) );
   }
@@ -176,7 +176,7 @@ class BasicInterface extends Component {
       activePopupEntryModified: false,
       activePopupEntry: null
     };
-    this.updateSessionStorage( newState );
+    this.updatelocalStorage( newState );
     this.setState( prevState => ( newState ));
   }
 
@@ -210,7 +210,7 @@ class BasicInterface extends Component {
       activePopupEntryModified: false,
       activePopupEntry: null
     };
-    this.updateSessionStorage( newState );
+    this.updatelocalStorage( newState );
     this.setState( prevState => ( newState ));
   } 
 
