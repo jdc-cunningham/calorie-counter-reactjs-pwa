@@ -1,16 +1,23 @@
-import React from 'react';
-import './misc/styles/css-reset.css';
-import './misc/fonts/fonts.css';
-import './misc/styles/layout.scss';
-import './App.scss';
-import BasicInterface from './components/basic-interface/BasicInterface';
+import logo from './logo.svg';
+import './App.css';
 
 function App() {
   return (
-    <div className="App flex-col-top-left">
-      <div className="container">
-        <BasicInterface />
-      </div>
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          Edit <code>src/App.js</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn React
+        </a>
+      </header>
     </div>
   );
 }
