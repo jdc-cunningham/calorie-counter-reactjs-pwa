@@ -4,7 +4,7 @@ This is a calorie counting app that I need to start using as this boi's been get
 I'm trying to find the motivation to do this work.
 
 ### Intended features
-- [ ] modify to include gragging current weight
+- [ ] modify to include grabbing current weight
 - [ ] item look up
     - save previously for faster re-use
 - [ ] menu

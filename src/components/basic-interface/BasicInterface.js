@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import './../../misc/styles/layout.scss';
 import './BasicInterface.scss';
-import { isObject } from './../../misc/js/utilities.js';
+import { isObject, getDateTime } from './../../misc/js/utilities.js';
 import closeIcon from './../../misc/icons/close-icon__chocolate.svg';
+import Dexie from 'dexie';
 
 class BasicInterface extends Component {
   state = {
@@ -12,20 +13,21 @@ class BasicInterface extends Component {
     calories : 0, // total calories for the day
     entries: [], // list of calorie 
     activePopupEntry: null, // should be object when set
-    activePopupEntryModified: false
+    activePopupEntryModified: false,
+    storage: null,
+    mountChecked: false // way to stop dumb async events ahh
   }
 
   // methods
   addCalories = this.addCalories.bind( this );
   getToday = this.getToday.bind( this );
-  getTodaysCalories = this.getTodaysCalories.bind( this );
-  getTodaysCalorieEntries = this.getTodaysCalorieEntries.bind( this );
   dateSlash = this.dateSlash.bind( this );
   togglePopup = this.togglePopup.bind( this );
   popupInputHandler = this.popupInputHandler.bind( this );
   savePopupEntryChanges = this.savePopupEntryChanges.bind( this );
   closePopup = this.closePopup.bind( this );
   deleteEntry = this.deleteEntry.bind( this );
+  updateLocalStorage = this.updateLocalStorage.bind( this );
 
   // inputs
   calorieName = React.createRef();
@@ -59,25 +61,60 @@ class BasicInterface extends Component {
     return today;
   }
 
-  getTodaysCalories( todaysDate ) {
-    let todaysCalories = localStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
-    return todaysCalories ? JSON.parse(todaysCalories).calories : 0;
-  }
+  getTodaysData( db ) {
+    const todaysDate = this.getTodaysDate();
+    let todaysCalories = 0;
+    db.entries.where("datetime").equals(todaysDate).toArray().then((entries) => { // ehh not a datetime operation probably faster than string comp
+      entries.forEach(entry => {
+        todaysCalories += entry.calories;
+      });
+      this.setState((prevState) => ({
+        ...prevState,
+        entries: entries,
+        calories: todaysCalories,
+        mountChecked: true,
+      }));
+    });  }
 
-  getTodaysCalorieEntries( todaysDate ) {
-    const todaysCalorieEntries = localStorage.getItem( todaysDate ? todaysDate : this.state.todaysDate );
-    return todaysCalorieEntries ? JSON.parse( todaysCalorieEntries ).entries : [];
-  }
+  updateLocalStorage( entryName, calories ) {
+    const storage = this.state.storage;
 
-  updatelocalStorage( newState ) {
-    localStorage.setItem( this.state.todaysDate, JSON.stringify(
-      {
-        calories: newState.calories,
-        entries: newState.entries
-      }
-    ));
+    storage.entries.add({
+        name: entryName,
+        calories: calories,
+        gain: true,
+        datetime: getDateTime("MM-DD-YYYY")
+    }).then((insertedId) => {
+      let currentCalories = this.state.calories,
+      currentCalorieEntries = this.state.entries,
+      newEntry = {
+        id: this.generateUniqueId(),
+        name: entryName,
+        amount: calories,
+        gain: calories > 0 ? true : false
+      },
+      newState = {};
 
-    this.calorieAddBtn.current.removeAttribute( 'disabled' );
+      currentCalorieEntries.push( newEntry );
+      currentCalories += calories;
+
+      newState = {
+        date: this.state.date,
+        today: this.state.today,
+        todaysDate: this.state.todaysDate,
+        calories: currentCalories,
+        entries: currentCalorieEntries,
+        activePopupEntry: null,
+        activePopupEntryModified: false
+      };
+
+      this.clearInputs();
+      this.setState( prevState => (newState) );
+    }).catch((err) => {
+      console.log(err);
+    }).finally(() => {
+      this.calorieAddBtn.current.removeAttribute( 'disabled' );
+    });
   }
 
   generateUniqueId() {
@@ -102,32 +139,7 @@ class BasicInterface extends Component {
       return;
     }
 
-    let currentCalories = this.state.calories,
-        currentCalorieEntries = this.state.entries,
-        newEntry = {
-          id: this.generateUniqueId(),
-          name: calorieName,
-          amount: calorieAmount,
-          gain: calorieAmount > 0 ? true : false
-        },
-        newState = {};
-
-    currentCalorieEntries.push( newEntry );
-    currentCalories += calorieAmount;
-
-    newState = {
-      date: this.state.date,
-      today: this.state.today,
-      todaysDate: this.state.todaysDate,
-      calories: currentCalories,
-      entries: currentCalorieEntries,
-      activePopupEntry: null,
-      activePopupEntryModified: false
-    };
-
-    this.updatelocalStorage( newState );
-    this.clearInputs();
-    this.setState( prevState => (newState) );
+    this.updateLocalStorage( calorieName, calorieAmount );
   }
 
   dateSlash( dateStr ) {
@@ -145,7 +157,7 @@ class BasicInterface extends Component {
     if ( whichInput === 'name' ) {
       curEntry.name = event.target.value;
     } else {
-      curEntry.amount = event.target.value;
+      curEntry.calories = event.target.value;
     }
 
     this.setState( prevState => ({
@@ -155,29 +167,31 @@ class BasicInterface extends Component {
   }
 
   savePopupEntryChanges() {
-    let curEntry = this.state.activePopupEntry,
-        curEntries = this.state.entries,
-        newTotalCalories = 0,
-        newState = {};
+    // let curEntry = this.state.activePopupEntry,
+    //     curEntries = this.state.entries,
+    //     newTotalCalories = 0,
+    //     newState = {};
 
-    curEntries.forEach( (entry, id) => {
-      if ( entry.id === curEntry.id ) {
-        curEntries[id] = curEntry;
-      }
-      newTotalCalories += parseInt( entry.amount );
-    });
+    // console.log(curEntries);
 
-    newState = {
-      date: this.state.date,
-      today: this.state.today,
-      todaysDate: this.state.todaysDate,
-      calories: newTotalCalories,
-      entries: curEntries,
-      activePopupEntryModified: false,
-      activePopupEntry: null
-    };
-    this.updatelocalStorage( newState );
-    this.setState( prevState => ( newState ));
+    // curEntries.forEach( (entry, id) => {
+    //   if ( entry.id === curEntry.id ) {
+    //     curEntries[id] = curEntry;
+    //   }
+    //   newTotalCalories += parseInt( entry.calories );
+    // });
+
+    // newState = {
+    //   date: this.state.date,
+    //   today: this.state.today,
+    //   todaysDate: this.state.todaysDate,
+    //   calories: newTotalCalories,
+    //   entries: curEntries,
+    //   activePopupEntryModified: false,
+    //   activePopupEntry: null
+    // };
+    // this.updateLocalStorage( curEntry =  );
+    // this.setState( prevState => ( newState ));
   }
 
   closePopup() {
@@ -210,61 +224,89 @@ class BasicInterface extends Component {
       activePopupEntryModified: false,
       activePopupEntry: null
     };
-    this.updatelocalStorage( newState );
+    this.updateLocalStorage( newState );
     this.setState( prevState => ( newState ));
-  } 
+  }
+
+  componentDidUpdate(prevProps, prevState) { // componentWillUpdate(nextProps, nextState)
+    console.log('did update');
+
+    if (this.state.storage && !this.state.mountChecked) {
+      this.getTodaysData(this.state.storage);
+    }
+  }
 
   componentWillMount() {
     const todaysDate = this.getTodaysDate();
 
-    this.setState( prevState => ({
-      today: this.getToday(),
-      todaysDate: todaysDate,
-      calories: parseInt( this.getTodaysCalories(todaysDate) ),
-      entries: this.getTodaysCalorieEntries( todaysDate )
-    }));
+    // checks if Dexie database exists, creates it if not
+    const db = new Dexie('CalorieCounterPwa');
+		db.version(1).stores({
+			entries: "++id,name,calories,gain,datetime"
+    });
+
+    db.open()
+      .then(() => {
+        // init other states required for render
+        console.log('call 1');
+        this.setState( prevState => ({
+          ...prevState,
+          today: this.getToday(),
+          todaysDate: todaysDate,
+          storage: db,
+          calories: 0,
+          // entries: curEntries,
+        }));
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("something went wrong", err.message)
+      });
   }
 
+  // has double init render due to above
   render() {
-    const todaysDateFormatted = this.dateSlash(this.state.todaysDate),
+    console.log(this.state);
+    const todaysDate = this.state.todaysDate;
+    const todaysDateFormatted = todaysDate ? this.dateSlash(this.state.todaysDate) : "",
           entryRows = this.state.entries.map( (entry, index) => {
             return(
               <div key={ index } onClick={ () => this.togglePopup(entry) } className="basic-interface__entry flex-wrap-center-left">
                 <span className="entry__name">{ entry.name }</span>
-                <span className="entry__calories">{ (entry.gain ? '+' : '-') + entry.amount }c</span>
+                <span className="entry__calories">{ (entry.gain ? '+' : '-') + entry.calories }c</span>
               </div>
             )
           });
     const activeEntry = this.state.activePopupEntry;
-    const entryPopup = (function( activeEntry, self ) {
-      if ( isObject(activeEntry) ) {
-        return(
-          <div className="basic-interface__popup">
-            <div className="basic-interface__popup-header flex-wrap-center-left">
-              <h2>Edit</h2>
-              <button type="button" className="flex-wrap-center-center" onClick= { self.closePopup }>
-                <img src={ closeIcon } alt="Close edit entry popup" />
-              </button>
-            </div>
-            <div className="basic-interface__popup-body flex-col-center-center">
-              <input type="text" value={ activeEntry.name } onChange={ (event) => self.popupInputHandler( 'name', event ) } />
-              <input type="number" value={ activeEntry.amount } onChange={ (event) => self.popupInputHandler( 'amount', event ) } />
-            </div>
-            <div className="basic-interface__popup-footer flex-wrap-center-left">
-              <button type="button" className="delete" onClick={ self.deleteEntry }>Delete</button>
-              <button type="button" className="save" 
-                disabled={ !self.state.activePopupEntryModified }
-                onClick={ self.savePopupEntryChanges }
-              >Save</button>
-            </div>
-          </div>
-        )
-      }
-    })( activeEntry, this );
+    // const entryPopup = (function( activeEntry, self ) {
+    //   if ( isObject(activeEntry) ) {
+    //     return(
+    //       <div className="basic-interface__popup">
+    //         <div className="basic-interface__popup-header flex-wrap-center-left">
+    //           <h2>Edit</h2>
+    //           <button type="button" className="flex-wrap-center-center" onClick= { self.closePopup }>
+    //             <img src={ closeIcon } alt="Close edit entry popup" />
+    //           </button>
+    //         </div>
+    //         <div className="basic-interface__popup-body flex-col-center-center">
+    //           <input type="text" value={ activeEntry.name } onChange={ (event) => self.popupInputHandler( 'name', event ) } />
+    //           <input type="number" value={ activeEntry.calories } onChange={ (event) => self.popupInputHandler( 'amount', event ) } />
+    //         </div>
+    //         <div className="basic-interface__popup-footer flex-wrap-center-left">
+    //           <button type="button" className="delete" onClick={ self.deleteEntry }>Delete</button>
+    //           <button type="button" className="save" 
+    //             disabled={ !self.state.activePopupEntryModified }
+    //             onClick={ self.savePopupEntryChanges }
+    //           >Save</button>
+    //         </div>
+    //       </div>
+    //     )
+    //   }
+    // })( activeEntry, this );
 
     return(
       <div className="basic-interface">
-        { entryPopup }
+        {/* { entryPopup } */}
         <div className="basic-interface__header flex-wrap-center-center">
           <div className="basic-interface__header-total-calories">
             <h2>
