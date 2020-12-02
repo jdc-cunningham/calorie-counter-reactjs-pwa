@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './../../misc/styles/layout.scss';
 import './BasicInterface.scss';
-import { isObject, getDateTime } from './../../misc/js/utilities.js';
+import { getDateTime } from './../../misc/js/utilities.js';
 import closeIcon from './../../misc/icons/close-icon__chocolate.svg';
 import Dexie from 'dexie';
 
@@ -60,7 +60,7 @@ const BasicInterface = () => {
         calories: entryAmount.current.value,
         gain: true,
         datetime: getDateTime("MM-DD-YYYY")
-    }).then((insertedId) => {
+    }).then(() => {
       clearInputs();
       getTodaysData(db);
     }).catch((err) => {
@@ -81,7 +81,6 @@ const BasicInterface = () => {
 
   const getTodaysData = (db) => {
     const todaysDate = getDateTime("MM-DD-YYYY");
-    let todaysCalories = 0;
     db.entries.where("datetime").equals(todaysDate).toArray().then((entries) => { // ehh not a datetime operation probably faster than string comp
       setEntries(entries);
     });
@@ -100,16 +99,65 @@ const BasicInterface = () => {
     setActiveEntry(null);
   }
 
-  const saveActiveEntryChanges = () => {
+  const saveActiveEntryChanges = (entryId) => {
+    if (!db) {
+      alert('Database not created');
+      return false;
+    }
 
+    db.entries.where("id").equals(entryId).modify({
+      name: activeEntry.name,
+      calories: activeEntry.calories
+    }).then(() => {
+      closeEntryPopup();
+      getTodaysData(db);
+    })
+    .catch(e => {
+      console.log('failed to update entry', e);
+      alert('failed to update entry');
+    });
   }
 
-  const popupInputHandler = (inputName, value) => {
+  const popupInputHandler = (inputName, value, setByPopup) => {
+    if (inputName === "name") {
+      setActiveEntry((prev) => ({
+        ...prev,
+        name: value
+      }));
+    } else {
+      setActiveEntry((prev) => ({
+        ...prev,
+        calories: value
+      }));
+    }
 
+    if (setByPopup && !activeEntryModified) {
+      setActiveEntryModified(true);
+    }
   }
   
-  const deleteEntry = (entry) => {
+  const deleteEntry = (entryId) => {
+    if (!db) {
+      alert("Database doesn't exist");
+      return false;
+    }
 
+    const dbEntry = db.entries.where("id").equals(entryId);
+
+    if (dbEntry) {
+      dbEntry.delete()
+        .then(() => {
+          alert('Entry deleted');
+          closeEntryPopup();
+          getTodaysData(db);
+        })
+        .catch((err) => {
+            alert('Failed to delete owner info');
+            console.log('delete entry failed', err);
+        });
+    } else {
+      alert("Entry not saved in database");
+    }
   }
 
   const entryPopup = (activeEntry) => {
@@ -122,14 +170,14 @@ const BasicInterface = () => {
           </button>
         </div>
         <div className="basic-interface__popup-body flex-col-center-center">
-          <input type="text" value={ activeEntry.name } onChange={ (event) => popupInputHandler( 'name', event.target.value ) } />
-          <input type="number" value={ activeEntry.calories } onChange={ (event) => popupInputHandler( 'amount', event.target.value ) } />
+          <input type="text" value={ activeEntry.name } onChange={ (event) => popupInputHandler( 'name', event.target.value, true ) } />
+          <input type="number" value={ activeEntry.calories } onChange={ (event) => popupInputHandler( 'amount', event.target.value, true ) } />
         </div>
         <div className="basic-interface__popup-footer flex-wrap-center-left">
-          <button type="button" className="delete" onClick={ () => deleteEntry(activeEntry.name) }>Delete</button>
+          <button type="button" className="delete" onClick={ () => deleteEntry(activeEntry.id) }>Delete</button>
           <button type="button" className="save" 
             disabled={ !activeEntryModified }
-            onClick={ () => saveActiveEntryChanges() }
+            onClick={ () => saveActiveEntryChanges(activeEntry.id) }
           >Save</button>
         </div>
       </div>
