@@ -8,19 +8,39 @@ import Dexie from 'dexie';
 
 const BasicInterface = () => {
   const [db, setDb] = useState(null);
-  const [entries, setEntries] = useState([
-    // {
-    //   name: "TMA",
-    //   gain: true,
-    //   calories: 300,
-    //   datetime: "11-27-2020"
-    // }
-  ]);
+  const [entries, setEntries] = useState([]);
+  const [activeEntry, setActiveEntry] = useState(null);
+  const [activeEntryModified, setActiveEntryModified] = useState(false);
   
   // inputs
   const entryName = useRef(null);
   const entryAmount = useRef(null);
   const calorieAddBtn = useRef(null);
+
+  const getToday = () => {
+    const intDayMap = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ];
+    const date = new Date();
+    const dayInt = date.getDay();
+
+    return intDayMap[dayInt];
+  }
+
+  const sumCalories = () => {
+    let calories = 0;
+    entries.forEach((entry) => {
+      calories += parseInt(entry.calories);
+    });
+    
+    return calories;
+  }
 
   const clearInputs = () => {
     entryName.current.value = '';
@@ -56,7 +76,7 @@ const BasicInterface = () => {
    * @param {object} entry - the calorie source 
    */
   const togglePopup = (entry) => {
-
+    setActiveEntry(entry);
   }
 
   const getTodaysData = (db) => {
@@ -75,6 +95,46 @@ const BasicInterface = () => {
       </div>
     ));
   })();
+
+  const closeEntryPopup = () => {
+    setActiveEntry(null);
+  }
+
+  const saveActiveEntryChanges = () => {
+
+  }
+
+  const popupInputHandler = (inputName, value) => {
+
+  }
+  
+  const deleteEntry = (entry) => {
+
+  }
+
+  const entryPopup = (activeEntry) => {
+    return !activeEntry ? null : (
+      <div className="basic-interface__popup">
+        <div className="basic-interface__popup-header flex-wrap-center-left">
+          <h2>Edit</h2>
+          <button type="button" className="flex-wrap-center-center" onClick= { () => closeEntryPopup() }>
+            <img src={ closeIcon } alt="Close edit entry popup" />
+          </button>
+        </div>
+        <div className="basic-interface__popup-body flex-col-center-center">
+          <input type="text" value={ activeEntry.name } onChange={ (event) => popupInputHandler( 'name', event.target.value ) } />
+          <input type="number" value={ activeEntry.calories } onChange={ (event) => popupInputHandler( 'amount', event.target.value ) } />
+        </div>
+        <div className="basic-interface__popup-footer flex-wrap-center-left">
+          <button type="button" className="delete" onClick={ () => deleteEntry(activeEntry.name) }>Delete</button>
+          <button type="button" className="save" 
+            disabled={ !activeEntryModified }
+            onClick={ () => saveActiveEntryChanges() }
+          >Save</button>
+        </div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     // checks if Dexie database exists, creates it if not
@@ -101,17 +161,17 @@ const BasicInterface = () => {
 
   return (
     <div className="basic-interface">
-      {/* { entryPopup } */}
+      { entryPopup(activeEntry) }
       <div className="basic-interface__header flex-wrap-center-center">
         <div className="basic-interface__header-total-calories">
           <h2>
-            {/* { this.state.calories } */}
+            { sumCalories() }
             <span>c</span>
           </h2>
         </div>
         <div className="basic-interface__header-date-group flex-col-center-right">
-          <span>{ "today" }</span>
-          <span>{ "today" }</span>
+          <span>{ getToday() }</span>
+          <span>{ getDateTime("MM/DD/YYYY") }</span>
         </div>
       </div>
       <div className="basic-interface__input flex-wrap-stretch-left">

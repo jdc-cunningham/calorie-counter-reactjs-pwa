@@ -94,6 +94,7 @@
 .basic-interface__entry {
   padding: 0.5em 0;
   width: 100%;
+  cursor: pointer;
 
   .entry__name {
     width: 70%;
@@ -110,6 +111,7 @@
   top: 0;
   left: 0;
   width: 100%;
+  max-width: calc(480px + 2em);
   height: 100%;
   background-color: #282828;
   padding: 1em;

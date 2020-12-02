@@ -31,11 +31,15 @@ export const getDateTime = (format = "") => {
   let seconds = date_ob.getSeconds();
   
   if (format === "YYYY-MM-DD") {
-      return `${year}-${month}-${date}`;
+    return `${year}-${month}-${date}`;
   }
 
   if (format === "MM-DD-YYYY") {
-      return `${month}-${date}-${year}`;
+    return `${month}-${date}-${year}`;
+  }
+
+  if (format === "MM/DD/YYYY") {
+    return `${month}/${date}/${year}`;
   }
 
   // prints date & time in YYYY-MM-DD HH:MM:SS format
