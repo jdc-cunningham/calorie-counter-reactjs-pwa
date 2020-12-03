@@ -1,3 +1,16 @@
+### Features
+- [ ] picture with calorie "group" saving eg. burger, could be broken down, not sure if needed
+- [ ] daily weight prompt
+- [ ] charting to show progression 2 or more lines(weight, calorie intake)
+
+### 12/02/2020
+I'm just going to add some small features. Added empty check as I accidentaly did that and it went through/messed up UI some.
+- [x] update schema
+- [x] make basic modal input
+  - rough idea of design:
+    - ![weight input design](./repo-images/weight-modal.PNG)
+- [x] add useeffect check for weight to prompt weight input
+  - nasty triple-state... just due to async nature, needed to plan better, also code should be separated (tech debt "fix it later")
 ### 12/01/2020
 So I've become pretty unpleasantly thicc with this pandemic. I used to hit up the gym on avg 5 days a week. [This was 2-3 years ago](https://i.imgur.com/9ltGrAZ.png) I was working a job standing up, working out insane like sometimes 3 hours straight. I wasn't ripped but I had some definition. I also didn't have a car/was roller blading home 5 miles. I think the lowest I had weighed at this time was between 205-215 lbs. Right now I'm 253lbs lmao... CHONK. It's all irrelevant in the end as not really social anymore... still I'd rather look good than bad.
 

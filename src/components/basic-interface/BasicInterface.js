@@ -11,6 +11,9 @@ const BasicInterface = () => {
   const [entries, setEntries] = useState([]);
   const [activeEntry, setActiveEntry] = useState(null);
   const [activeEntryModified, setActiveEntryModified] = useState(false);
+  const [weight, setWeight] = useState(0);
+  const [weightInput, setWeightInput] = useState(0);
+  const [showWeightPrompt, setShowWeightPrompt] = useState(false); // nasty three states
   
   // inputs
   const entryName = useRef(null);
@@ -52,6 +55,12 @@ const BasicInterface = () => {
 
     if (!db) {
       alert('Database not created');
+      return false;
+    }
+
+    // check fields not empty
+    if (!entryName.current.value || !entryAmount.current.value) {
+      alert('Please make sure both fields are filled in');
       return false;
     }
 
@@ -152,8 +161,8 @@ const BasicInterface = () => {
           getTodaysData(db);
         })
         .catch((err) => {
-            alert('Failed to delete owner info');
-            console.log('delete entry failed', err);
+          alert('Failed to delete owner info');
+          console.log('delete entry failed', err);
         });
     } else {
       alert("Entry not saved in database");
@@ -184,15 +193,67 @@ const BasicInterface = () => {
     )
   }
 
+  const saveWeight = () => {
+    if (weightInput > 0) {
+      if (!db) {
+        alert('Database not created');
+        return false;
+      }
+  
+      db.weight.add({
+        weight: weightInput,
+        datetime: getDateTime("MM-DD-YYYY")
+      }).then(() => {
+        setShowWeightPrompt(false);
+      }).catch((err) => {
+        console.log(err);
+        alert('Failed to save weight');
+      });
+    } else {
+      alert('Please enter a value for weight');
+    }
+  }
+
+  const weightPrompt = () => {
+    return !showWeightPrompt ? null
+      : (
+        <div className="basic-interface__weight-prompt">
+          <div className="basic-interface__weight-prompt-modal">
+            <p>How much do you weigh today?</p>
+            <span>
+              <input type="number" placeholder="0" value={weightInput} onChange={ (e) => setWeightInput(e.target.value) }/>
+              <p>lbs</p>
+            </span>
+            <button type="button" onClick={() => saveWeight()}>save</button>
+          </div>
+        </div>
+      );
+  }
+
+  // setup Dexie datastore
   useEffect(() => {
     // checks if Dexie database exists, creates it if not
     const db = new Dexie('CalorieCounterPwa');
     db.version(1).stores({
-      entries: "++id,name,calories,gain,datetime"
+      entries: "++id,name,calories,gain,datetime",
+      weight: "++,weight,datetime"
     });
  
     db.open()
       .then(() => {
+        // check weight
+        if (!weight) {
+          db.weight.where("datetime")
+            .equals(getDateTime("MM-DD-YYYY")).toArray()
+            .then((weights) => { // should only be one per day
+              if (weights.length) {
+                setWeight(weights[0].weight);
+              } else {
+                setShowWeightPrompt(true);
+              }
+              setDb(db);
+            });
+        }
         setDb(db);
       })
       .catch((err) => {
@@ -209,6 +270,7 @@ const BasicInterface = () => {
 
   return (
     <div className="basic-interface">
+      { weightPrompt() }
       { entryPopup(activeEntry) }
       <div className="basic-interface__header flex-wrap-center-center">
         <div className="basic-interface__header-total-calories">
