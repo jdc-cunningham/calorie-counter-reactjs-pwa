@@ -1,7 +1,7 @@
-### Features
+### TODO Features
 - [ ] picture with calorie "group" saving eg. burger, could be broken down, not sure if needed
-- [ ] daily weight prompt
 - [ ] charting to show progression 2 or more lines(weight, calorie intake)
+- [ ] method to purge data like in TT
 
 ### 12/02/2020
 I'm just going to add some small features. Added empty check as I accidentaly did that and it went through/messed up UI some.
