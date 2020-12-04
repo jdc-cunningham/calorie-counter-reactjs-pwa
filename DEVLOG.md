@@ -3,6 +3,12 @@
 - [ ] charting to show progression 2 or more lines(weight, calorie intake)
 - [ ] method to purge data like in TT
 
+### 12/03/2020
+Added back in PWA thanks to this [SO post](https://stackoverflow.com/questions/56122942/create-react-app-service-worker-not-functioning).
+In the past CRA just had the PWA stuff working out of the box.
+I also am aware I deployed stuff that could be considered secret regarding the deployment urls but it's fine.
+The data is stored to your own device/no APIs are used. This is also a random domain I bought/setup https for.
+
 ### 12/02/2020
 I'm just going to add some small features. Added empty check as I accidentaly did that and it went through/messed up UI some.
 - [x] update schema
