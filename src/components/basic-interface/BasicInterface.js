@@ -233,7 +233,57 @@ const BasicInterface = () => {
       );
   }
 
-  const saveFoodSuggestion = (name, calories) => {
+  const deleteSuggestedFood = (event, name) => {
+    event.stopPropagation();
+    if (window.confirm(`Delete suggested food ${name}?`)) {
+      const suggestedFoodToDelete = db.suggestedFoods.where('name').equals(name);
+
+      suggestedFoodToDelete.count()
+        .then((count) => {
+          if (count) {
+            suggestedFoodToDelete.delete()
+            .then(() => {
+              db.suggestedFoods
+                .toArray()
+                .then((results) => {
+                  setSuggestedFoods(results);
+                }).catch((err) => {
+                  alert(`Failed to delete suggested food ${name}`);
+                });
+            })
+            .catch((err) => {
+                alert(`Failed to delete suggested food ${name}`);
+            });
+          }
+        })
+        .catch((err) => {
+          alert(`Failed to delete suggested food ${name}`);
+        });
+    }
+  }
+
+  const checkSuggestedFoodExists = async (name) => {
+    return new Promise(resolve => {
+      db.suggestedFoods
+        .where("name")
+        .equals(name)
+        .toArray()
+        .then((results) => {
+          resolve(results.length);
+        }).catch((err) => {
+          resolve(false);
+        });
+    });
+  }
+
+  const saveFoodSuggestion = async (name, calories) => {
+    const entryExists = await checkSuggestedFoodExists(name);
+
+    if (entryExists) {
+      addCalories(true);
+      return;
+    }
+
     db.suggestedFoods.add({
       name,
       calories,
@@ -355,7 +405,12 @@ const BasicInterface = () => {
                   setSuggestedFoods([]);
                   setSuggestedFood(food);
                 }}
-              >{ food.name }</div>)
+              >
+                <span>{ food.name }</span>
+                <button type="button" className="flex-wrap-center-center" onClick= { (e) => deleteSuggestedFood(e, food.name) }>
+                  <img src={ closeIcon } alt="delete suggested food" />
+                </button>
+              </div>)
             }
           </div> : null }
         </div>

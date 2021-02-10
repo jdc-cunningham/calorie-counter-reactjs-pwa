@@ -87,11 +87,31 @@
 }
 
 .input-search-suggestions__suggestion {
+  display: flex;
+  align-items: stretch;
+  flex-direction: flex-start;
+  flex-direction: row;
   padding: 8px;
   background-color: #282828;
 
   &:not(:last-of-type) {
     border-bottom: 1px solid #ccc;
+  }
+
+  span {
+    flex: 1;
+  }
+
+  button {
+    flex: 0;
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+
+    img {
+      width: 1em;
+      height: 1em;
+    }
   }
 }
 
