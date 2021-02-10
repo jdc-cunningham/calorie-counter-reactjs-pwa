@@ -9,8 +9,8 @@
   - [x] prototype UI changes
   - [ ] link to Dexie
     - [x] basic save/get
-      - [ ] add check to stop re-saving
-      - [ ] add way to delete 
+      - [x] add check to stop re-saving
+      - [x] add way to delete 
 
 
 ### 12/03/2020
