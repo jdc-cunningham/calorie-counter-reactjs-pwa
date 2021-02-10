@@ -3,6 +3,13 @@
 - [ ] charting to show progression 2 or more lines(weight, calorie intake)
 - [ ] method to purge data like in TT
 
+### 02/09/2020
+- [ ] modify indexed db data structure to include saved food items
+- [ ] modify search input to be able to show a dropdown to pick from and set the active state
+  - [x] prototype UI changes
+  - [ ] link to Dexie
+
+
 ### 12/03/2020
 Added back in PWA thanks to this [SO post](https://stackoverflow.com/questions/56122942/create-react-app-service-worker-not-functioning).
 In the past CRA just had the PWA stuff working out of the box.

@@ -14,6 +14,8 @@ const BasicInterface = () => {
   const [weight, setWeight] = useState(0);
   const [weightInput, setWeightInput] = useState(0);
   const [showWeightPrompt, setShowWeightPrompt] = useState(false); // nasty three states
+  const [suggestedFoods, setSuggestedFoods] = useState([]);
+  const [suggestedFood, setSuggestedFood] = useState({});
   
   // inputs
   const entryName = useRef(null);
@@ -230,6 +232,10 @@ const BasicInterface = () => {
       );
   }
 
+  const checkSavedFoods = (string) => {
+    console.log('search', string);
+  }
+
   // setup Dexie datastore
   useEffect(() => {
     // checks if Dexie database exists, creates it if not
@@ -285,8 +291,41 @@ const BasicInterface = () => {
         </div>
       </div>
       <div className="basic-interface__input flex-wrap-stretch-left">
-        <input placeholder="Name" type="text" className="basic-interface__input-name" ref={ entryName } />
-        <input placeholder="Calories" type="number" className="basic-interface__input-calories" ref={ entryAmount } />
+        <div className="basic-interface__input-name-wrapper">
+          <input
+            placeholder="Name"
+            type="text"
+            className="basic-interface__input-name"
+            onChange={(e) => { checkSavedFoods(e.target.value) }}
+            ref={ entryName }
+            value={ suggestedFood.name || "" }
+          />
+          { suggestedFoods.length ? <div className="basic-interface__input-search-suggestions">
+            {
+              suggestedFoods.map((food, index) => <div
+                key={index}
+                className="input-search-suggestions__suggestion"
+                data-calories={food.calories}
+                onClick={() => {
+                  setSuggestedFood(food);
+                  setSuggestedFoods([]);
+                }}
+              >{ food.name }</div>)
+            }
+          </div> : null }
+        </div>
+        <input
+          placeholder="Calories"
+          type="number"
+          className="basic-interface__input-calories"
+          ref={ entryAmount }
+          value={ suggestedFood.calories || 0 }
+          onChange={(e) => { setSuggestedFood({
+              ...suggestedFood,
+              calories: e.target.value
+            })
+          }}
+        />
         <button type="button" className="basic-interface__input-submit" onClick={ () => addCalories() } ref={ calorieAddBtn }>Add</button>
       </div>
       { entryRows }

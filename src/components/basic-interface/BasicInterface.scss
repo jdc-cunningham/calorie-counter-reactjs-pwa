@@ -63,10 +63,35 @@
   }
 }
 
-.basic-interface__input-name {
+.basic-interface__input-name-wrapper {
+  position: relative;
   width: calc( 52% - 0.5em );
   margin-right: 0.5em;
+}
+
+.basic-interface__input-name {
+  width: 100%;
   @extend .gray-input;
+}
+
+.basic-interface__input-search-suggestions {
+  position: absolute;
+  top: calc(100% + 0.5em);
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid #ccc;
+  max-height: 35vh;
+  overflow-y: auto;
+}
+
+.input-search-suggestions__suggestion {
+  padding: 8px;
+
+  &:not(:last-of-type) {
+    border-bottom: 1px solid #ccc;
+  }
 }
 
 .basic-interface__input-calories {
