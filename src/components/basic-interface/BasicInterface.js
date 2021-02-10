@@ -16,6 +16,7 @@ const BasicInterface = () => {
   const [showWeightPrompt, setShowWeightPrompt] = useState(false); // nasty three states
   const [suggestedFoods, setSuggestedFoods] = useState([]);
   const [suggestedFood, setSuggestedFood] = useState({});
+  const [prevSuggestedFoodName, setPrevSuggestedFoodName] = useState("");
   
   // inputs
   const entryName = useRef(null);
@@ -52,7 +53,7 @@ const BasicInterface = () => {
     entryAmount.current.value = '';
   }
 
-  const addCalories = () => {
+  const addCalories = (suggestedFood = false) => {
     calorieAddBtn.current.removeAttribute( 'disabled' );
 
     if (!db) {
@@ -72,7 +73,7 @@ const BasicInterface = () => {
         gain: true,
         datetime: getDateTime("MM-DD-YYYY")
     }).then(() => {
-      clearInputs();
+      suggestedFood ? setSuggestedFood({}) : clearInputs();
       getTodaysData(db);
     }).catch((err) => {
       console.log(err);
@@ -232,8 +233,41 @@ const BasicInterface = () => {
       );
   }
 
-  const checkSavedFoods = (string) => {
-    console.log('search', string);
+  const saveFoodSuggestion = (name, calories) => {
+    db.suggestedFoods.add({
+      name,
+      calories,
+    }).then(() => {
+      addCalories(true);
+    }).catch((err) => {
+      alert('failed to save');
+    });
+  }
+
+  const searchFoodSuggestions = (searchStr) => {
+    setSuggestedFood({
+      ...suggestedFood,
+      name: searchStr
+    });
+  }
+
+  // source: https://stackoverflow.com/a/469419/2710227
+  const validate = (event) => {
+    var theEvent = event || window.event;
+  
+    // Handle paste
+    if (theEvent.type === 'paste') {
+        key = event.clipboardData.getData('text/plain');
+    } else {
+    // Handle key press
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+    }
+    var regex = /[0-9]|\./;
+    if( !regex.test(key) ) {
+      theEvent.returnValue = false;
+      if(theEvent.preventDefault) theEvent.preventDefault();
+    }
   }
 
   // setup Dexie datastore
@@ -241,8 +275,9 @@ const BasicInterface = () => {
     // checks if Dexie database exists, creates it if not
     const db = new Dexie('CalorieCounterPwa');
     db.version(1).stores({
-      entries: "++id,name,calories,gain,datetime",
-      weight: "++,weight,datetime"
+      entries: "++id, name, calories, gain, datetime",
+      weight: "++, weight, datetime",
+      suggestedFoods: "++, name, calories"
     });
  
     db.open()
@@ -274,6 +309,16 @@ const BasicInterface = () => {
     }
   }, [db]);
 
+  useEffect(() => {
+    if (Object.keys(suggestedFood).length && suggestedFood.name && prevSuggestedFoodName !== suggestedFood.name.toLowerCase()) {
+      setPrevSuggestedFoodName(suggestedFood.name.toLowerCase());
+      const regex = new RegExp(suggestedFood.name, "i"); // case insensitive
+      db.suggestedFoods.filter(food => regex.test(food.name)).toArray().then((foods) => {
+        setSuggestedFoods(foods);
+      });
+    }
+  }, [suggestedFood])
+
   return (
     <div className="basic-interface">
       { weightPrompt() }
@@ -296,7 +341,7 @@ const BasicInterface = () => {
             placeholder="Name"
             type="text"
             className="basic-interface__input-name"
-            onChange={(e) => { checkSavedFoods(e.target.value) }}
+            onChange={(e) => { searchFoodSuggestions(e.target.value) }}
             ref={ entryName }
             value={ suggestedFood.name || "" }
           />
@@ -307,8 +352,8 @@ const BasicInterface = () => {
                 className="input-search-suggestions__suggestion"
                 data-calories={food.calories}
                 onClick={() => {
-                  setSuggestedFood(food);
                   setSuggestedFoods([]);
+                  setSuggestedFood(food);
                 }}
               >{ food.name }</div>)
             }
@@ -316,17 +361,25 @@ const BasicInterface = () => {
         </div>
         <input
           placeholder="Calories"
-          type="number"
+          type="text"
           className="basic-interface__input-calories"
           ref={ entryAmount }
-          value={ suggestedFood.calories || 0 }
+          value={ suggestedFood.calories || "" }
+          onKeyPress={(e) => { validate(e) }}
           onChange={(e) => { setSuggestedFood({
               ...suggestedFood,
               calories: e.target.value
             })
           }}
         />
-        <button type="button" className="basic-interface__input-submit" onClick={ () => addCalories() } ref={ calorieAddBtn }>Add</button>
+        <button
+          type="button"
+          className="basic-interface__input-submit"
+          onClick={ () => {
+            suggestedFood ? saveFoodSuggestion(suggestedFood.name, suggestedFood.calories) : addCalories()
+          }}
+          ref={ calorieAddBtn }
+        >Add</button>
       </div>
       { entryRows }
     </div>

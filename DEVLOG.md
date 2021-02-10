@@ -4,10 +4,13 @@
 - [ ] method to purge data like in TT
 
 ### 02/09/2020
-- [ ] modify indexed db data structure to include saved food items
+- [x] modify indexed db data structure to include saved food items
 - [ ] modify search input to be able to show a dropdown to pick from and set the active state
   - [x] prototype UI changes
   - [ ] link to Dexie
+    - [x] basic save/get
+      - [ ] add check to stop re-saving
+      - [ ] add way to delete 
 
 
 ### 12/03/2020
