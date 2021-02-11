@@ -3,11 +3,24 @@
 - [ ] charting to show progression 2 or more lines(weight, calorie intake)
 - [ ] method to purge data like in TT
 
+### 02/10/2020
+So today something interesting happened, my phone that's connected to my WiFi could not reach the local machines eg. 192... while my lan desktop could...
+I don't know how but it makes me think about developing stuff to work off remote servers...
+Anyway I gotta crap out an API real quick that I can use. I'm going to try reset my router and see if that fixes it. DiD yOu TrY tUrNiNg It On AnD oFf AgAiN?
+
+- [ ] make API
+  - [ ] setup db
+    - [ ] schema from Dexie
+    - [ ] create and import to local dev
+  - [ ] make API routes/methods
+    - [ ] upload
+  - [ ] deploy to Pi (assuming local network issue fixed)
+- [ ] add sync to API from Dexie
 ### 02/09/2020
 - [x] modify indexed db data structure to include saved food items
-- [ ] modify search input to be able to show a dropdown to pick from and set the active state
+- [x] modify search input to be able to show a dropdown to pick from and set the active state
   - [x] prototype UI changes
-  - [ ] link to Dexie
+  - [x] link to Dexie
     - [x] basic save/get
       - [x] add check to stop re-saving
       - [x] add way to delete 
