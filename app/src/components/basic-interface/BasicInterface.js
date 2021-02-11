@@ -96,8 +96,12 @@ const BasicInterface = () => {
       return;
     }
 
+    // only sending 1 at a time because can have duplicates in same day
+    // other values are filtered on server side
+    const entry = entries.length > 1 ? entries.slice(-1)[0] : entries[0];
+
     axios.post(`${process.env.REACT_APP_API_BASE}/sync-up`, {
-      entries,
+      entry,
       suggestedFoods,
       weight
     })

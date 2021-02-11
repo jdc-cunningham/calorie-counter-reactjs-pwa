@@ -130,7 +130,7 @@ const uploadData = async (req, res) => {
   const { entries, suggestedFoods, weight } = req.body;
 
   // entries/weight expected to be filled, suggestedFoods may be empty/unchanged
-  if (!Object.keys(req.body).length || !entries.length || !weight.length) {
+  if (!req.body || !entries?.length || !weight?.length) {
     res.status(400).send('invalid data');
     return;
   }
