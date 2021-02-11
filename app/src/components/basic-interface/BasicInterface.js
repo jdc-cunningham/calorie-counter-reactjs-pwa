@@ -111,7 +111,6 @@ const BasicInterface = () => {
   }
 
   const addCalories = (suggestedFood = false) => {
-    console.log('add', suggestedFood);
     calorieAddBtn.current.removeAttribute( 'disabled' );
 
     if (!db) {
@@ -421,12 +420,14 @@ const BasicInterface = () => {
   }, [db]);
 
   useEffect(() => {
-    if (Object.keys(suggestedFood).length && suggestedFood.name && prevSuggestedFoodName !== suggestedFood.name.toLowerCase()) {
+    if (Object.keys(suggestedFood).length && suggestedFood.name && prevSuggestedFoodName.toLowerCase() !== suggestedFood.name.toLowerCase()) {
       setPrevSuggestedFoodName(suggestedFood.name.toLowerCase());
       const regex = new RegExp(suggestedFood.name, "i"); // case insensitive
       db.suggestedFoods.filter(food => regex.test(food.name)).toArray().then((foods) => {
         setSuggestedFoods(foods);
       });
+    } else {
+      setSuggestedFoods([]);
     }
   }, [suggestedFood]);
 
@@ -470,6 +471,7 @@ const BasicInterface = () => {
                 data-calories={food.calories}
                 onClick={() => {
                   setSuggestedFood(food);
+                  setPrevSuggestedFoodName(food.name);
                   setSuggestedFoods([]);
                 }}
               >
