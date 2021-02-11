@@ -87,21 +87,16 @@ const BasicInterface = () => {
   }
 
   const syncData = async () => {
-    const todaysDate = getDateTime("MM-DD-YYYY");
-    const suggestedFoods = await getSuggestedFoods(todaysDate);
-    const weight = await getTodaysWeight(todaysDate);
+    const suggestedFoods = await getSuggestedFoods(getDateTime("YYYY-MM-DD"));
+    const weight = await getTodaysWeight(getDateTime("MM-DD-YYYY"));
 
     if (entries.length && !weight.length) {
       alert('Failed to sync data or incomplete data'); // which is it
       return;
     }
 
-    // only sending 1 at a time because can have duplicates in same day
-    // other values are filtered on server side
-    const entry = entries.length > 1 ? entries.slice(-1)[0] : entries[0];
-
     axios.post(`${process.env.REACT_APP_API_BASE}/sync-up`, {
-      entry,
+      entries,
       suggestedFoods,
       weight
     })
@@ -116,6 +111,7 @@ const BasicInterface = () => {
   }
 
   const addCalories = (suggestedFood = false) => {
+    console.log('add', suggestedFood);
     calorieAddBtn.current.removeAttribute( 'disabled' );
 
     if (!db) {
@@ -135,7 +131,9 @@ const BasicInterface = () => {
         gain: true,
         datetime: getDateTime("MM-DD-YYYY")
     }).then(() => {
-      suggestedFood ? setSuggestedFood({}) : clearInputs();
+      setSuggestedFood([]);
+      clearInputs();
+      setPrevSuggestedFoodName("");
       getTodaysData(db);
     }).catch((err) => {
       console.log(err);
@@ -349,7 +347,7 @@ const BasicInterface = () => {
     db.suggestedFoods.add({
       name,
       calories,
-      datetime: getDateTime("YYYY-MM-DD")
+      datetime: getDateTime("YYYY-MM-DD") // matches db
     }).then(() => {
       addCalories(true);
     }).catch((err) => {
@@ -471,8 +469,8 @@ const BasicInterface = () => {
                 className="input-search-suggestions__suggestion"
                 data-calories={food.calories}
                 onClick={() => {
-                  setSuggestedFoods([]);
                   setSuggestedFood(food);
+                  setSuggestedFoods([]);
                 }}
               >
                 <span>{ food.name }</span>

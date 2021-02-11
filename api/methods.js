@@ -16,34 +16,49 @@ const formatDate = () => {
   return [year, month, day].join('-');
 }
 
-const insertEntries = async (entries, datetime) => {
+// there is a possiblity of datetime overlap since the frontend UI derives its own time and the server side has its own time
+// client side could pass it to server side
+const entryExists = async (todaysDate) => {
   return new Promise(resolve => {
-    // a for loop insert I realize can be bad/should be a recursive insert but that also means adding delay
-    // the client side will limit the data inserted by date filtering
-    for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i];
-      let error;
-
-      pool.query(
-        `INSERT INTO entries SET name = ?, calories = ?, gain = ?, datetime = ?`,
-        [entry.name, entry.calories, entry.gain, datetime],
-        (err, sqlRes) => {
-          if (err) {
-            console.log(err);
-            error = true;
-            resolve(false);
+    pool.query(
+      `SELECT id FROM entries WHERE datetime = ?`,
+      [todaysDate],
+      (err, sqlRes) => {
+        if (err) {
+          resolve(false);
+        } else {
+          if (sqlRes.length) {
+            resolve(true);
           } else {
-            if (i === entries.length - 1) {
-              resolve(true);
-            }
+            resolve(false);
           }
         }
-      );
-        
-      if (error) {
-        break;
       }
-    }
+    );
+  });
+}
+
+const insertEntries = async (entries, datetime) => {
+  const todaysDate = formatDate();
+  const entryForTodayExists = await entryExists(todaysDate);
+
+  return new Promise(resolve => {
+    // ooh fancy, no this is actually bad
+    pool.query(
+      `${entryForTodayExists
+        ? 'UPDATE entries SET todays_calories = ? WHERE datetime = ?'
+        : 'INSERT INTO entries SET todays_calories= ?, datetime = ?'}`,
+        [JSON.stringify(entries), todaysDate],
+      (err, sqlRes) => {
+        if (err) {
+          console.log(err);
+          error = true;
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      }
+    );
   });
 }
 
@@ -56,11 +71,7 @@ const suggestedFoodExists = async (suggestedFoodName) => {
         if (err) {
           resolve(false);
         } else {
-          if (sqlRes.length) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
+          resolve(sqlRes.length);
         }
       }
     );
@@ -106,11 +117,33 @@ const insertSuggestedFoods = async (suggestedFoods) => {
   });
 }
 
+const checkDailyWeightSet = async () => {
+  return new Promise(resolve => {
+    pool.query(
+      `SELECT id FROM weight WHERE datetime = ?`,
+      [formatDate()],
+      (err, sqlRes) => {
+        if (err) {
+          console.log(err);
+          resolve(false);
+        } else {
+          resolve(sqlRes.length);
+        }
+      }
+    );
+  });
+}
+
 // datetime supplied but wrong format
 const insertWeight = async (weightEntry, datetime) => {
   const { weight } = weightEntry;
+  const weightSet = await checkDailyWeightSet();
 
   return new Promise(resolve => {
+    if (weightSet) {
+      resolve(true);
+    }
+
     pool.query(
       `INSERT INTO weight SET weight = ?, datetime = ?`,
       [weight, formatDate()],
