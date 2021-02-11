@@ -5,6 +5,7 @@ import './BasicInterface.scss';
 import { getDateTime } from './../../misc/js/utilities.js';
 import closeIcon from './../../misc/icons/close-icon__chocolate.svg';
 import Dexie from 'dexie';
+import axios from 'axios';
 
 const BasicInterface = () => {
   const [db, setDb] = useState(null);
@@ -53,6 +54,65 @@ const BasicInterface = () => {
     entryAmount.current.value = '';
   }
 
+  const getSuggestedFoods = async () => {
+    return new Promise(resolve => {
+      db
+        .suggestedFoods
+        .toArray()
+        .then((suggestedFoods) => {
+          resolve(suggestedFoods);
+        })
+        .catch(err => {
+          resolve([]);
+        });
+    });
+  }
+
+  const getTodaysWeight = async (todaysDate) => {
+    return new Promise(resolve => {
+      db
+        .weight
+        .where("datetime")
+        .equals(todaysDate)
+        .toArray()
+        .then((weight) => {
+          resolve(weight);
+        })
+        .catch(err => {
+          resolve(false);
+        });
+    });
+  }
+
+  const syncData = async () => {
+    const todaysDate = getDateTime("MM-DD-YYYY");
+    const suggestedFoods = await getSuggestedFoods();
+    const weight = await getTodaysWeight(todaysDate);
+
+    if (!entries.length || !weight.length) {
+      alert('Failed to sync data or incomplete data'); // which is it
+      return;
+    }
+
+    console.log(entries, suggestedFoods, weight);
+
+    axios.post(`${process.env.REACT_APP_API_BASE}/sync-up`, {
+      entries,
+      suggestedFoods,
+      weight
+    })
+    .then((res) => {
+      if (res.status === 204) {
+        console.log('success');
+      } else {
+        alert('Failed to save data');
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }
+
   const addCalories = (suggestedFood = false) => {
     calorieAddBtn.current.removeAttribute( 'disabled' );
 
@@ -80,6 +140,7 @@ const BasicInterface = () => {
       alert('Failed to save');
     }).finally(() => {
       calorieAddBtn.current.removeAttribute( 'disabled' );
+      syncData();
     });
   }
 
@@ -358,6 +419,15 @@ const BasicInterface = () => {
       getTodaysData(db);
     }
   }, [db]);
+
+  // tmp
+  useEffect(() => {
+    if (entries.length) {
+      console.log('pause');
+      console.log(syncData());
+      console.log('continue');
+    }
+  }, [entries]);
 
   useEffect(() => {
     if (Object.keys(suggestedFood).length && suggestedFood.name && prevSuggestedFoodName !== suggestedFood.name.toLowerCase()) {

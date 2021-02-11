@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 5011;
 
-const { syncData } = require('./methods');
+const { uploadData } = require('./methods');
 
 // CORs
 app.use((req, res, next) => {
@@ -28,7 +28,7 @@ app.get('/',(req, res) => {
   res.status(200).send('working');
 });
 
-app.post('/sync', syncData);
+app.post('/sync-up', uploadData);
 
 app.listen(port, () => {
   console.log(`App running... on port ${port}`);

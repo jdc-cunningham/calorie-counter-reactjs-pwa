@@ -16,19 +16,22 @@ const formatDate = () => {
   return [year, month, day].join('-');
 }
 
-const insertEntries = async (entries) => {
+const insertEntries = async (entries, datetime) => {
   return new Promise(resolve => {
     // a for loop insert I realize can be bad/should be a recursive insert but that also means adding delay
     // the client side will limit the data inserted by date filtering
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
+      let error;
+
       pool.query(
         `INSERT INTO entries SET name = ?, calories = ?, gain = ?, datetime = ?`,
-        [entry.name, entry.calories, entry.gain, formatDate()],
+        [entry.name, entry.calories, entry.gain, datetime],
         (err, sqlRes) => {
           if (err) {
+            console.log(err);
+            error = true;
             resolve(false);
-            break;
           } else {
             if (i === entries.length - 1) {
               resolve(true);
@@ -36,6 +39,10 @@ const insertEntries = async (entries) => {
           }
         }
       );
+        
+      if (error) {
+        break;
+      }
     }
   });
 }
@@ -48,10 +55,11 @@ const suggestedFoodExists = async (suggestedFoodName) => {
       (err, sqlRes) => {
         if (err) {
           resolve(false);
-          break;
         } else {
-          if (sqlRes) {
+          if (sqlRes.length) {
             resolve(true);
+          } else {
+            resolve(false);
           }
         }
       }
@@ -60,13 +68,18 @@ const suggestedFoodExists = async (suggestedFoodName) => {
 }
 
 const insertSuggestedFoods = async (suggestedFoods) => {
-  return new Promise(resolve => {
+  return new Promise(async (resolve) => {
     // a for loop insert I realize can be bad/should be a recursive insert but that also means adding delay
     // the client side will limit the data inserted by date filtering
     for (let i = 0; i < suggestedFoods.length; i++) {
       const suggestedFood = suggestedFoods[i];
+      const dontSave = await suggestedFoodExists(suggestedFood.name); // lol
+      let error;
 
-      if (await suggestedFoodExists(suggestedFood.name)) {
+      if (dontSave) {
+        if (i === suggestedFoods.length - 1) { // nasty
+          resolve(true);
+        }
         continue;
       }
 
@@ -75,8 +88,8 @@ const insertSuggestedFoods = async (suggestedFoods) => {
         [suggestedFood.name, suggestedFood.calories],
         (err, sqlRes) => {
           if (err) {
+            error = true;
             resolve(false);
-            break;
           } else {
             if (i === suggestedFoods.length - 1) {
               resolve(true);
@@ -84,33 +97,55 @@ const insertSuggestedFoods = async (suggestedFoods) => {
           }
         }
       );
+
+      if (error) {
+        break;
+      }
     }
   });
 }
 
-const insertWeight = async(weight) => {
+const insertWeight = async (weightEntry, datetime) => {
+  const { weight } = weightEntry;
 
+  return new Promise(resolve => {
+    pool.query(
+      `INSERT INTO weight SET weight = ?, datetime = ?`,
+      [weight, datetime],
+      (err, sqlRes) => {
+        if (err) {
+          console.log(err);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
 }
 
-const syncData = async (req, res) => {
+const uploadData = async (req, res) => {
   const { entries, suggestedFoods, weight } = req.body;
 
   // entries/weight expected to be filled, suggestedFoods may be empty/unchanged
-  if (!entries || !weight) {
+  if (!entries.length || !weight.length) {
     res.status(400).send('invalid data');
+    return;
   }
 
-  const entriesInserted = await insertEntries(entries);
+  const datetime = formatDate();
+  const entriesInserted = await insertEntries(entries, datetime);
   const suggestedFoodsInserted = !suggestedFoods.length ? true : await insertSuggestedFoods(suggestedFoods);
-  const weightInserted = await insertWeight(weight);
+  const weightInserted = await insertWeight(weight[0], datetime);
 
-  if (!entriesInserted || !suggestedFoodsInserted || !weightsInserted) {
+  if (!entriesInserted || !suggestedFoodsInserted || !weightInserted) {
     res.status(400).send('failed to insert');
+    return;
   }
   
   res.status(204).send('success');
 }
 
 module.exports = {
-  syncData
+  uploadData
 }
