@@ -84,10 +84,11 @@ const insertSuggestedFoods = async (suggestedFoods) => {
       }
 
       pool.query(
-        `INSERT INTO suggested_foods SET name = ?, calories = ?`,
-        [suggestedFood.name, suggestedFood.calories],
+        `INSERT INTO suggested_foods SET name = ?, calories = ?, datetime = ?`,
+        [suggestedFood.name, suggestedFood.calories, suggestedFood.datetime],
         (err, sqlRes) => {
           if (err) {
+            console.log(err);
             error = true;
             resolve(false);
           } else {
@@ -105,13 +106,14 @@ const insertSuggestedFoods = async (suggestedFoods) => {
   });
 }
 
+// datetime supplied but wrong format
 const insertWeight = async (weightEntry, datetime) => {
   const { weight } = weightEntry;
 
   return new Promise(resolve => {
     pool.query(
       `INSERT INTO weight SET weight = ?, datetime = ?`,
-      [weight, datetime],
+      [weight, formatDate()],
       (err, sqlRes) => {
         if (err) {
           console.log(err);
@@ -128,7 +130,7 @@ const uploadData = async (req, res) => {
   const { entries, suggestedFoods, weight } = req.body;
 
   // entries/weight expected to be filled, suggestedFoods may be empty/unchanged
-  if (!entries.length || !weight.length) {
+  if (!Object.keys(req.body).length || !entries.length || !weight.length) {
     res.status(400).send('invalid data');
     return;
   }

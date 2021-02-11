@@ -54,10 +54,12 @@ const BasicInterface = () => {
     entryAmount.current.value = '';
   }
 
-  const getSuggestedFoods = async () => {
+  const getSuggestedFoods = async (todaysDate) => {
     return new Promise(resolve => {
       db
         .suggestedFoods
+        .where("datetime")
+        .equals(todaysDate)
         .toArray()
         .then((suggestedFoods) => {
           resolve(suggestedFoods);
@@ -86,15 +88,13 @@ const BasicInterface = () => {
 
   const syncData = async () => {
     const todaysDate = getDateTime("MM-DD-YYYY");
-    const suggestedFoods = await getSuggestedFoods();
+    const suggestedFoods = await getSuggestedFoods(todaysDate);
     const weight = await getTodaysWeight(todaysDate);
 
-    if (!entries.length || !weight.length) {
+    if (entries.length && !weight.length) {
       alert('Failed to sync data or incomplete data'); // which is it
       return;
     }
-
-    console.log(entries, suggestedFoods, weight);
 
     axios.post(`${process.env.REACT_APP_API_BASE}/sync-up`, {
       entries,
@@ -102,9 +102,7 @@ const BasicInterface = () => {
       weight
     })
     .then((res) => {
-      if (res.status === 204) {
-        console.log('success');
-      } else {
+      if (res.status !== 204) {
         alert('Failed to save data');
       }
     })
@@ -140,7 +138,6 @@ const BasicInterface = () => {
       alert('Failed to save');
     }).finally(() => {
       calorieAddBtn.current.removeAttribute( 'disabled' );
-      syncData();
     });
   }
 
@@ -348,6 +345,7 @@ const BasicInterface = () => {
     db.suggestedFoods.add({
       name,
       calories,
+      datetime: getDateTime("YYYY-MM-DD")
     }).then(() => {
       addCalories(true);
     }).catch((err) => {
@@ -388,7 +386,7 @@ const BasicInterface = () => {
     db.version(1).stores({
       entries: "++id, name, calories, gain, datetime",
       weight: "++, weight, datetime",
-      suggestedFoods: "++, name, calories"
+      suggestedFoods: "++, name, calories, datetime"
     });
  
     db.open()
@@ -420,15 +418,6 @@ const BasicInterface = () => {
     }
   }, [db]);
 
-  // tmp
-  useEffect(() => {
-    if (entries.length) {
-      console.log('pause');
-      console.log(syncData());
-      console.log('continue');
-    }
-  }, [entries]);
-
   useEffect(() => {
     if (Object.keys(suggestedFood).length && suggestedFood.name && prevSuggestedFoodName !== suggestedFood.name.toLowerCase()) {
       setPrevSuggestedFoodName(suggestedFood.name.toLowerCase());
@@ -437,7 +426,13 @@ const BasicInterface = () => {
         setSuggestedFoods(foods);
       });
     }
-  }, [suggestedFood])
+  }, [suggestedFood]);
+
+  useEffect(() => {
+    if (entries.length) {
+      syncData();
+    }
+  }, [entries]);
 
   return (
     <div className="basic-interface">
