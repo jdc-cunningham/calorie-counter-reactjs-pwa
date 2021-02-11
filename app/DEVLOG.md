@@ -8,14 +8,16 @@ So today something interesting happened, my phone that's connected to my WiFi co
 I don't know how but it makes me think about developing stuff to work off remote servers...
 Anyway I gotta crap out an API real quick that I can use. I'm going to try reset my router and see if that fixes it. DiD yOu TrY tUrNiNg It On AnD oFf AgAiN?
 
-- [ ] make API
-  - [ ] setup db
-    - [ ] schema from Dexie
-    - [ ] create and import to local dev
-  - [ ] make API routes/methods
-    - [ ] upload
-  - [ ] deploy to Pi (assuming local network issue fixed)
-- [ ] add sync to API from Dexie
+Ehh... the API has to be https as well makes sense... ugh... will have to host that/make a cert for that too need to finish the "cert broker"
+
+- [x] make API
+  - [x] setup db
+    - [x] schema from Dexie
+    - [x] create and import to local dev
+  - [x] make API routes/methods
+    - [x] upload
+  - [x] deploy to Pi (assuming local network issue fixed)
+- [x] add sync to API from Dexie
 ### 02/09/2020
 - [x] modify indexed db data structure to include saved food items
 - [x] modify search input to be able to show a dropdown to pick from and set the active state

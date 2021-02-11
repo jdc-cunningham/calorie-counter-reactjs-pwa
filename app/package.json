@@ -39,6 +39,7 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "https://25975a3f39d4ab50.com",
-  "display": "standlalone"
+  "homepage": "http://192.168.1.144/calorie-counter",
+  "display": "standlalone",
+  "proxy": "http://192.168.1.144:5011"
 }
